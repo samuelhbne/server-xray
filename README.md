@@ -48,7 +48,7 @@ $ docker run --name server-xray -p 8443:443 -d samuelhbne/server-xray:amd64 --lt
 
 ## How to verify if server-xray is running properly
 
-Try to connect the server from v2ray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, UUID etc. set above. Or verify it from Ubuntu / Debian / Raspbian client host follow the instructions below.
+Try to connect the server from Xray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, UUID etc. set above. Or verify it from Ubuntu / Debian / Raspbian client host follow the instructions below.
 
 ### Please run the following instructions from Ubuntu / Debian / Raspbian client host for verifying
 
