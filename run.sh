@@ -12,17 +12,17 @@ usage() {
     echo "    --ltx  <VLESS-TCP-XTLS option>        p=443,d=domain0.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]"
     echo "    --ltt  <VLESS-TCP-TLS option>         p=1443,d=domain1.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]"
     echo "    --lttw <VLESS-TCP-TLS-WS option>      p=2443,d=domain2.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath"
+    echo "    --lttg <VLESS-TCP-TLS-GRPC option>    p=7443,d=domain0.com,u=uuid[:level[:email]],s=svcname,g=grpcport"
     echo "    --mtt  <VMESS-TCP-TLS option>         p=3443,d=domain3.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]"
     echo "    --mttw <VMESS-TCP-TLS-WS option>      p=4443,d=domain4.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath"
     echo "    --ttt  <TROJAN-TCP-TLS option>        p=5443,d=domain5.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]"
     echo "    --tttw <TROJAN-TCP-TLS-WS option>     p=6443,d=domain5.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --gttn <gRPC-TCP-TLS-NGINX option>    p=7443,d=domain0.com,u=uuid[:level[:email]],s=svcname,g=grpcport"
 #   echo "    --ssa  <Shadowsocks-AEAD option>      port=8443,user=password1:method1[,user=password2:method2]"
 #   echo "    --sst  <Shadowsocks-TCP option>       port=9443,user=passwd,method=xxxx"
     echo "    --stdin                               Read XRay config from stdin instead of auto generation"
 }
 
-TEMP=`getopt -o k:r:c:d --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,mtt:,mttw:,ttt:,tttw:,gttn:,ssa:,sst:stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o k:r:c:d --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,mtt:,mttw:,ttt:,tttw:,lttg:,ssa:,sst:stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -44,10 +44,10 @@ while true ; do
             DEBUG=1
             shift 1
             ;;
-        --ltx|--ltt|--lttw|--mtt|--mttw|--ttt|--tttw|--gttn)
-            if [ "$1" = "--gttn" ]; then NGINX=1; fi
+        --ltx|--ltt|--lttw|--lttg|--mtt|--mttw|--ttt|--tttw)
+            if [ "$1" = "--lttg" ]; then NGINX=1; fi
             SVC=`echo $1|tr -d '\-\-'`
-            SVCMD+=("$DIR/server-${SVC}.sh $2")
+            SVCMD+=("${DIR}server-${SVC}.sh $2")
             shift 2
             ;;
         --stdin)

@@ -27,7 +27,7 @@ ADD server-mtt.sh           /server-mtt.sh
 ADD server-mttw.sh          /server-mttw.sh
 ADD server-ttt.sh           /server-ttt.sh
 ADD server-tttw.sh          /server-tttw.sh
-ADD server-gttn.sh          /server-gttn.sh
+ADD server-lttg.sh          /server-lttg.sh
 
 RUN chmod 755 /*.sh
 
