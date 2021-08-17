@@ -18,14 +18,16 @@ RUN apk update && apk add bash nginx openssl curl socat jq moreutils
 RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/2.9.0.tar.gz"|tar zxvf -
 RUN cd /root; mv acme.sh-2.9.0 .acme.sh
 
-ADD run.sh         /run.sh
-ADD server-ltx.sh  /server-ltx.sh
-ADD server-ltt.sh  /server-ltt.sh
-ADD server-lttw.sh /server-lttw.sh
-ADD server-mtt.sh  /server-mtt.sh
-ADD server-mttw.sh /server-mttw.sh
-ADD server-ttt.sh  /server-ttt.sh
-ADD server-tttw.sh /server-tttw.sh
+COPY site-ssl-grpc.conf.tpl /etc/nginx/http.d/
+ADD run.sh                  /run.sh
+ADD server-ltx.sh           /server-ltx.sh
+ADD server-ltt.sh           /server-ltt.sh
+ADD server-lttw.sh          /server-lttw.sh
+ADD server-mtt.sh           /server-mtt.sh
+ADD server-mttw.sh          /server-mttw.sh
+ADD server-ttt.sh           /server-ttt.sh
+ADD server-tttw.sh          /server-tttw.sh
+ADD server-gttn.sh          /server-gttn.sh
 
 RUN chmod 755 /*.sh
 

@@ -4,3 +4,4 @@
 # Allow only docker duild files
 !Dockerfile.*
 !*.sh
+!*.tpl
