@@ -60,6 +60,8 @@ if [ -z "${xuser}" ]; then
     exit 1
 fi
 
+if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
+
 XCONF=$xconf
 cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vmess", "settings":{"clients":[]}}]' |sponge $XCONF
 

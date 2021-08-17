@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-gttn <xconf=xray-config-file>,<certpath=cert-path-root>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>,<service=svcname>,<gport=65443>"
+    echo "Usage: server-lttg <xconf=xray-config-file>,<certpath=cert-path-root>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>,<service=svcname>,<gport=65443>"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -68,6 +68,9 @@ if [ -z "${xuser}" ]; then
     usage
     exit 1
 fi
+
+if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
+if ! [ "${gport}" -eq "${gport}" ] 2>/dev/null; then >&2 echo "Gport number must be numeric"; exit 1; fi
 
 XCONF=$xconf
 cat $XCONF |jq --arg gport "${gport}" '.inbounds +=[{"port":($gport|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
