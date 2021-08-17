@@ -25,14 +25,14 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed
     -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed
     -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed
-    --ltx  <VLESS-TCP-XTLS option>     p=443,d=domain0.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --ltt  <VLESS-TCP-TLS option>      p=1443,d=domain1.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --lttw <VLESS-TCP-TLS-WS option>   p=2443,d=domain2.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
-    --lttg <VLESS-TCP-TLS-GRPC option> p=3443,d=domain0.com,u=uuid[:level[:email]],s=svcname,g=grpcport
-    --mtt  <VMESS-TCP-TLS option>      p=4443,d=domain3.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --mttw <VMESS-TCP-TLS-WS option>   p=5443,d=domain4.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
-    --ttt  <TROJAN-TCP-TLS option>     p=6443,d=domain5.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]
-    --tttw <TROJAN-TCP-TLS-WS option>  p=7443,d=domain5.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --ltx  <VLESS-TCP-XTLS option>     p=443,d=mydomain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
+    --ltt  <VLESS-TCP-TLS option>      p=443,d=mydomain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
+    --lttw <VLESS-TCP-TLS-WS option>   p=443,d=mydomain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --lttg <VLESS-TCP-TLS-GRPC option> p=443,d=mydomain.com,u=uuid[:level[:email]],s=/svcpath,g=grpcport
+    --mtt  <VMESS-TCP-TLS option>      p=443,d=mydomain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
+    --mttw <VMESS-TCP-TLS-WS option>   p=443,d=mydomain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --ttt  <TROJAN-TCP-TLS option>     p=443,d=mydomain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]
+    --tttw <TROJAN-TCP-TLS-WS option>  p=443,d=mydomain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --stdin                            Read XRay config from stdin instead of auto generation
 
 $ docker run --name server-xray -p 80:80 -p 8443:443 -d samuelhbne/server-xray:amd64 --ltx p=443,d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:80 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c -r mydomain.duckdns.org
