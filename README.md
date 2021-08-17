@@ -52,7 +52,7 @@ $ docker run --name server-xray -p 80:80 -p 8443:443 -d samuelhbne/server-xray:a
 
 Try to connect the server from Xray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, UUID etc. set above. Or verify it from Ubuntu / Debian / Raspbian client host follow the instructions below.
 
-### Please run the following instructions from Ubuntu / Debian / Raspbian client host for verifying
+### Verifying server-xray connection with proxy-xray
 
 ```shell
 $ docker run --rm -it samuelhbne/proxy-xray:amd64
@@ -76,10 +76,10 @@ $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 
 ### NOTE4
 
-- First we ran proxy-xray as SOCKS5 proxy that tunneling traffic through your Xray server.
-- Then launching curl with client-IP address query through the proxy.
-- This query was sent through your server with server-xray running.
-- You should get the public IP address of your server with server-xray running if all good.
+- First we ran proxy-xray which created a SOCKS5 proxy that tunneling traffic through your Xray server.
+- Then a curl qery was sent to ifconfig.co through the Xray server via the socks5 port served by proxy-xray.
+- Like this: curl --> proxy-xray --> server-xray --> ifconfig.co website.
+- You should get the public IP address of your Xray server if all go well.
 - Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) for more details.
 
 ## How to stop and remove the running container
