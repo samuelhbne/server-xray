@@ -35,7 +35,7 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     --tttw <TROJAN-TCP-TLS-WS option>  p=443,d=mydomain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --stdin                            Read XRay config from stdin instead of auto generation
 
-$ docker run --name server-xray -p 80:80 -p 8443:443 -d samuelhbne/server-xray:amd64 --ltx p=443,d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:80 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c -r mydomain.duckdns.org
+$ docker run --name server-xray -p 80:80 -p 8443:443 -d samuelhbne/server-xray:amd64 --ltx p=443,d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:8080 -r mydomain.duckdns.org
 ...
 ```
 
@@ -47,6 +47,67 @@ $ docker run --name server-xray -p 80:80 -p 8443:443 -d samuelhbne/server-xray:a
 - Please replace "bec24d96-410f-4723-8b3b-46987a1d9ed8" with the uuid you want to set for Xray client auth.
 - Please replace mydomain.duckdns.org with the domain-name for Letsencrypt cert request.
 - You can optionally assign a HOOK-URL to update the DDNS domain-name pointing to the current server public IP address.
+
+## Examples
+
+### 1. Running a XTLS server with DDNS auto-update and Letsencrypt cert auto-request
+
+The following command will:
+
+1. Update mydomain.duckdns.org to the current IP address
+2. Request TLS cert from Letsencrypt
+3. Run Xray in Vless+TLS+Websocket mode on port 1443 with the cert given above
+4. Fallback the connection to local port 8080 if client handshake failed
+
+```shell
+$ docker run --name server-xray -p 80:80 -p 443:1443 -d samuelhbne/server-xray:amd64 \
+--lttx p=1443,d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:8080 \
+-k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+-r mydomain.duckdns.org
+...
+```
+
+#### Note1
+
+The service port 1443 was exported as 443 for client accesss from internet
+
+#### Note2
+
+Port 80 must be exported for domain ownership verification during Letsencrypt cert requesting
+
+### 2. Running a Vless+TLS+Websocket server with given TLS cert
+
+The following command will:
+
+1. Assume to read TLS cert from /home/ubuntu/cert/mydomain.duckdns.org/fullchain.cer
+2. Assume to read private key from  /home/ubuntu/cert/mydomain.duckdns.org/mydomain.duckdns.org.key
+3. Assume mydomain.duckdns.org has been resolved to the current server
+4. Run Xray in Vless+TLS+Websocket mode on port 2443 with the given cert
+5. Fallback to microsoft.com if client handshake failed (Anti-detection)
+
+```shell
+$ docker run --name server-xray -p 443:2443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray:amd64 \
+--lttw p=2443,d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,w=/websocket,f=microsoft.com:80 \
+-c /opt/cert
+...
+```
+
+### 3. Running a Vless+TLS+gRPC server with Nginx in front of, with given TLS cert
+
+The following command will:
+
+1. Assume to read TLS cert from /home/ubuntu/cert/mydomain.duckdns.org/fullchain.cer
+2. Assume to read private key from  /home/ubuntu/cert/mydomain.duckdns.org/mydomain.duckdns.org.key
+3. Assume mydomain.duckdns.org has been resolved to the current server
+4. Run Xray in Vless+TLS+gRPC mode on port 65443 with the given cert
+5. Run nginx on port 443 as a front to protect gRPC backend from detection
+6. Only port 443 will be available for access from internet
+
+```shell
+$ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray:amd64 \
+-c /opt/cert --lttg port=443,domain=mydomain.duckdns.org,user=bec24d96-410f-4723-8b3b-46987a1d9ed8,service=/gsvc,gport=65443
+...
+```
 
 ## How to verify if server-xray is running properly
 
