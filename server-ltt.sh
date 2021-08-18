@@ -43,9 +43,7 @@ if [ -z "${xconf}" ]; then
 fi
 
 if [ -z "${port}" ]; then
-    echo "Error: port undefined."
-    usage
-    exit 1
+    port=443
 fi
 
 if [ -z "${domain}" ]; then
