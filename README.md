@@ -44,8 +44,8 @@ $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray -
 - Please replace the port 443 (-p 443:2443) with the port number you choose for Xray incoming connection.
 - Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
 - Please replace "bec24d96-410f-4723-8b3b-46987a1d9ed8" with the uuid you set for Xray client auth.
-- Please replace mydomain.duckdns.org with the domain-name for Letsencrypt cert request.
-- You can optionally assign a HOOK-URL to update the DDNS domain-name pointing to the current server public IP address.
+- Please replace mydomain.duckdns.org with the domain-name of yours.
+- You can optionally assign a HOOK-URL to update the DDNS.
 
 ## How to verify if server-xray is running properly
 
@@ -176,7 +176,7 @@ Xray-URL: vless://bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443?
 ...
 ```
 
-### 3. Running a Vless+TLS+gRPC server with Nginx in front of, with given TLS cert
+### 3. Running a Vless+TLS+gRPC server with Nginx in front of, with existing TLS cert
 
 The following command will:
 
