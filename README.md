@@ -64,6 +64,7 @@ proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [options]
     --mttw <VMESS-TCP-TLS-WS option>      uuid@host:port:/webpath
     --ttt  <TROJAN-TCP-TLS option>        password@host:port
     --tttw <TROJAN-TCP-TLS-WS option>     password@host:port:/webpath
+    -d|--debug                            Start in debug mode with DNS server disabled
     --stdin                               Read XRay config from stdin instead of auto generation
 
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --ltx bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443
@@ -176,14 +177,14 @@ Xray-URL: vless://bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443?
 ...
 ```
 
-### 3. Running a Vless+TLS+gRPC server with Nginx in front of, with existing TLS cert
+### 3. Running a Vless+TCP+TLS+gRPC server with Nginx in front of, with existing TLS cert
 
 The following command will:
 
 1. Assume to read TLS cert from /home/ubuntu/cert/mydomain.duckdns.org/fullchain.cer
 2. Assume to read private key from  /home/ubuntu/cert/mydomain.duckdns.org/mydomain.duckdns.org.key
 3. Assume mydomain.duckdns.org has been resolved to the current server
-4. Run Xray in Vless+TLS+gRPC mode on port 65443 with the given cert
+4. Run Xray in Vless+TCP+TLS+gRPC mode on port 65443 with the given cert
 5. Run nginx on port 443 as a front to protect gRPC backend from detection
 6. Only port 443 will be available for access from internet
 
