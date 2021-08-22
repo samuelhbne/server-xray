@@ -35,7 +35,7 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --stdin                            Read XRay config from stdin instead of auto generation
 
-$ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray --ltx p=2443,d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:8080 -r mydomain.duckdns.org
+$ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 -r mydomain.duckdns.org
 ...
 ```
 
@@ -43,7 +43,7 @@ $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray -
 
 - Please replace the port 443 (-p 443:2443) with the port number you choose for Xray incoming connection.
 - Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
-- Please replace "bec24d96-410f-4723-8b3b-46987a1d9ed8" with the uuid you set for Xray client auth.
+- Please replace "myid" with the id string or standard UUID you set for Xray client auth.
 - Please replace mydomain.duckdns.org with the domain-name of yours.
 - You can optionally assign a HOOK-URL to update the DDNS.
 
@@ -67,7 +67,7 @@ proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [options]
     -d|--debug                            Start in debug mode with DNS server disabled
     --stdin                               Read XRay config from stdin instead of auto generation
 
-$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --ltx bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443
+$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --ltx myid@mydomain.duckdns.org:443
 ...
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
@@ -105,7 +105,7 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
---ltx p=443,d=domain1.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:8443 \
+--ltx p=443,d=domain1.duckdns.org,u=myid,f=:8443 \
 --ttt p=2443,d=domain2.duckdns.org,u=trojan_pass
 -r domain1.duckdns.org -k https://duckdns.org/update/domain1/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r domain2.duckdns.org -k https://duckdns.org/update/domain2/c9711c65-db21-4f8c-a790-2c32c93bde8c
@@ -116,14 +116,14 @@ $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/s
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --ltx \
-bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443
+myid@mydomain.duckdns.org:443
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 
 $ docker exec -it proxy-xray /status.sh
 VPS-Server: domain1.duckdns.org
-Xray-URL: vless://bec24d96-410f-4723-8b3b-46987a1d9ed8@domain1.duckdns.org:443?security=xtls&type=tcp&flow=xtls-rprx-direct#domain1.duckdns.org:443
+Xray-URL: vless://myid@domain1.duckdns.org:443?security=xtls&type=tcp&flow=xtls-rprx-direct#domain1.duckdns.org:443
 [QR-Code]
 ...
 ```
@@ -156,7 +156,7 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
---lttw d=mydomain.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,w=/websocket,f=microsoft.com:80 \
+--lttw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
 -c /opt/cert
 ...
 ```
@@ -165,14 +165,14 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttw \
-bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443:/websocket
+myid@mydomain.duckdns.org:443:/websocket
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 
 $ docker exec -it proxy-xray /status.sh
 VPS-Server: mydomain.duckdns.org
-Xray-URL: vless://bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443?security=tls&type=ws&path=%2Fwebsocket#mydomain.duckdns.org:443
+Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=ws&path=%2Fwebsocket#mydomain.duckdns.org:443
 [QR-Code]
 ...
 ```
@@ -190,7 +190,7 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
--c /opt/cert --lttg port=443,domain=mydomain.duckdns.org,user=bec24d96-410f-4723-8b3b-46987a1d9ed8,service=/gsvc,gport=65443
+-c /opt/cert --lttg port=443,domain=mydomain.duckdns.org,user=myid,service=/gsvc,gport=65443
 ...
 ```
 
@@ -198,14 +198,14 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttg \
-bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443:/gsvc
+myid@mydomain.duckdns.org:443:/gsvc
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 
 $ docker exec -it proxy-xray /status.sh
 VPS-Server: mydomain.duckdns.org
-Xray-URL: vless://bec24d96-410f-4723-8b3b-46987a1d9ed8@mydomain.duckdns.org:443?security=tls&type=grpc&serviceName=/gsvc&mode=gun#mydomain.duckdns.org:443
+Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceName=/gsvc&mode=gun#mydomain.duckdns.org:443
 [QR-Code]
 ...
 ```
