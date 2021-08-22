@@ -105,7 +105,7 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
---lttx p=443,d=domain1.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:8443 \
+--ltx p=443,d=domain1.duckdns.org,u=bec24d96-410f-4723-8b3b-46987a1d9ed8,f=:8443 \
 --ttt p=2443,d=domain2.duckdns.org,u=trojan_pass
 -r domain1.duckdns.org -k https://duckdns.org/update/domain1/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r domain2.duckdns.org -k https://duckdns.org/update/domain2/c9711c65-db21-4f8c-a790-2c32c93bde8c
