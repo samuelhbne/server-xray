@@ -25,17 +25,18 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed
     -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed
     -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed
-    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
-    --lttg <VLESS-TCP-TLS-GRPC option> [p=443,]d=domain.com,u=uuid[:level[:email]],s=/svcpath,g=grpcport
-    --mtt  <VMESS-TCP-TLS option>      [p=443,]d=domain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=uuid[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
+    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
+    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --lttg <VLESS-TCP-TLS-GRPC option> [p=443,]d=domain.com,u=id[:level[:email]],s=/svcpath,g=grpcport
+    --mtt  <VMESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
+    --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]
     --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --stdin                            Read XRay config from stdin instead of auto generation
 
-$ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 -r mydomain.duckdns.org
+$ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
+--ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 -r mydomain.duckdns.org
 ...
 ```
 
@@ -43,31 +44,32 @@ $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray -
 
 - Please replace the port 443 (-p 443:2443) with the port number you choose for Xray incoming connection.
 - Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
-- Please replace "myid" with the id string or standard UUID you set for Xray client auth.
+- Please replace "myid" with the id string or standard UUID (like "MyMobile or "b77af52c-2a93-4b3e-8538-f9f91114ba00") you set for Xray client auth.
 - Please replace mydomain.duckdns.org with the domain-name of yours.
 - You can optionally assign a HOOK-URL to update the DDNS.
 
 ## How to verify if server-xray is running properly
 
-Try to connect the server from Xray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, UUID etc. set above. Or verify it from Ubuntu / Debian / Raspbian client host follow the instructions below.
+Try to connect the server from Xray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, id etc. set above. Or verify it from Ubuntu / Debian / Raspbian client host follow the instructions below.
 
 ### Verifying server-xray connection with proxy-xray
 
 ```shell
 $ docker run --rm -it samuelhbne/proxy-xray
 proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [options]
-    --ltx  <VLESS-TCP-XTLS option>        uuid@host:port
-    --ltt  <VLESS-TCP-TLS option>         uuid@host:port
-    --lttw <VLESS-TCP-TLS-WS option>      uuid@host:port:/webpath
-    --lttg <VLESS-TCP-TLS-GRPC option>    uuid@host:port:/svcpath
-    --mtt  <VMESS-TCP-TLS option>         uuid@host:port
-    --mttw <VMESS-TCP-TLS-WS option>      uuid@host:port:/webpath
+    --ltx  <VLESS-TCP-XTLS option>        id@host:port
+    --ltt  <VLESS-TCP-TLS option>         id@host:port
+    --lttw <VLESS-TCP-TLS-WS option>      id@host:port:/webpath
+    --lttg <VLESS-TCP-TLS-GRPC option>    id@host:port:/svcpath
+    --mtt  <VMESS-TCP-TLS option>         id@host:port
+    --mttw <VMESS-TCP-TLS-WS option>      id@host:port:/webpath
     --ttt  <TROJAN-TCP-TLS option>        password@host:port
     --tttw <TROJAN-TCP-TLS-WS option>     password@host:port:/webpath
     -d|--debug                            Start in debug mode with DNS server disabled
     --stdin                               Read XRay config from stdin instead of auto generation
 
-$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --ltx myid@mydomain.duckdns.org:443
+$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
+--ltx myid@mydomain.duckdns.org:443
 ...
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
@@ -106,9 +108,11 @@ The following command will:
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
 --ltx p=443,d=domain1.duckdns.org,u=myid,f=:8443 \
---ttt p=2443,d=domain2.duckdns.org,u=trojan_pass
--r domain1.duckdns.org -k https://duckdns.org/update/domain1/c9711c65-db21-4f8c-a790-2c32c93bde8c \
--r domain2.duckdns.org -k https://duckdns.org/update/domain2/c9711c65-db21-4f8c-a790-2c32c93bde8c
+--ttt p=2443,d=domain2.duckdns.org,u=trojan_pass \
+-k https://duckdns.org/update/domain1/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+-k https://duckdns.org/update/domain2/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+-r domain1.duckdns.org \
+-r domain2.duckdns.org
 ...
 ```
 
@@ -207,5 +211,16 @@ $ docker exec -it proxy-xray /status.sh
 VPS-Server: mydomain.duckdns.org
 Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceName=/gsvc&mode=gun#mydomain.duckdns.org:443
 [QR-Code]
+...
+```
+
+### 4. Running server-ray in debug mode for connection issue diagnosis
+
+The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis. dnscrypt-proxy will be disabled to avoid flooding the log output.
+
+```shell
+$ docker run --rm -p 80:80 -p 443:443 -it samuelhbne/server-xray \
+-k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+--mttw myid@mydomain.duckdns.org:/webpath -r mydomain.duckdns.org --debug
 ...
 ```
