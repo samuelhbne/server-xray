@@ -214,7 +214,7 @@ Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceNa
 ...
 ```
 
-### 4. Running server-ray in debug mode for connection issue diagnosis
+### 4. Running server-ray container in debug mode for connection issue diagnosis
 
 The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis. dnscrypt-proxy will be disabled to avoid flooding the log output.
 
