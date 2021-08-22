@@ -221,6 +221,7 @@ The following instruction start server-trojan in debug mode. Output Xray config 
 ```shell
 $ docker run --rm -p 80:80 -p 443:443 -it samuelhbne/server-xray \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
---mttw myid@mydomain.duckdns.org:/webpath -r mydomain.duckdns.org --debug
+--mttw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
+-r mydomain.duckdns.org --debug
 ...
 ```
