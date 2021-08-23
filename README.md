@@ -15,7 +15,12 @@ $ docker build -t samuelhbne/server-xray -f Dockerfile.amd64 .
 
 ### NOTE1
 
-- Please replace "amd64" with the arch match the current box accordingly. For example: "arm64" for AWS ARM64 platform like A1, t4g instance or 64bit Ubuntu on Raspberry Pi. "arm" for 32bit Raspbian.
+Please replace "amd64" with the arch match the current box accordingly. Support platforms:
+
+- "arm64" for arm64v8 platforms, Raspberry Pi with Ubuntu-arm64 running, AWS A1, t4g instances etc.
+- "arm" for arm32v7 platforms, most Raspberry-Pi releases (except Pi1 and Pi-zero) with Raspbian running.
+- arm32v6 platforms (Pi1 and Pi-zero) users need to build the docker images from source rather than run it directly, due to the known issue from upstream Alpine image. WIP.
+- arm32v5 platforms are not supported yet.
 
 ## How to start the container
 
@@ -37,17 +42,19 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
 
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
---ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 -r mydomain.duckdns.org
+--ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
+-k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+-r mydomain.duckdns.org
 ...
 ```
 
 ### NOTE2
 
-- Please replace the port 443 (-p 443:2443) with the port number you choose for Xray incoming connection.
+- Please replace the port 443 (-p 443:2443) with the port number you choose for incoming connection.
 - Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
-- Please replace "myid" with the id string or standard UUID (like "MyMobile or "b77af52c-2a93-4b3e-8538-f9f91114ba00") you set for Xray client auth.
-- Please replace mydomain.duckdns.org with the domain-name of yours.
-- You can optionally assign a HOOK-URL to update the DDNS.
+- Please replace "myid" with an id string or a standard UUID ("MyMobile", "b77af52c-2a93-4b3e-8538-f9f91114ba00" etc.) you set for client auth.
+- Please replace "mydomain.duckdns.org" with the domain-name of yours.
+- You can optionally assign a HOOK-URL to update the DDNS to the current server IP.
 
 ## How to verify if server-xray is running properly
 
@@ -77,12 +84,14 @@ $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 ```
 
-### NOTE4
+### NOTE3
 
-- First we ran proxy-xray which created a SOCKS5 proxy that tunneling traffic through your Xray server.
-- Then a curl qery was sent to ifconfig.co through the Xray server via the socks5 port served by proxy-xray.
+#### How it works
+
+- proxy-xray created a SOCKS5 proxy that tunneling traffic through your Xray server.
+- curl qery was sent to ifconfig.co via the SOCKS5 proxy served by proxy-xray.
 - Like this: curl --> proxy-xray --> server-xray --> ifconfig.co website.
-- You should get the public IP address of your Xray server if all go well.
+- You should get the public IP address of server-xray if all go well.
 - Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) for more details.
 
 ## How to stop and remove the running container
