@@ -19,10 +19,11 @@ usage() {
     echo "    --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath"
 #   echo "    --ssa  <Shadowsocks-AEAD option>   [port=443,]user=password1:method1[,user=password2:method2]"
 #   echo "    --sst  <Shadowsocks-TCP option>    [port=443,]user=passwd,method=xxxx"
-    echo "    --stdin                            Read XRay config from stdin instead of auto generation"
+    echo "    -i|--stdin                         Read XRay config from stdin instead of auto generation"
+    echo "    -d|--debug                         Start Xray in debug mode with verbose output"
 }
 
-TEMP=`getopt -o k:r:c:d --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,mtt:,mttw:,ttt:,tttw:,lttg:,ssa:,sst:stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o k:r:c:di --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,mtt:,mttw:,ttt:,tttw:,lttg:,ssa:,sst:stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -40,6 +41,10 @@ while true ; do
             CERTPATH+="$2"
             shift 2
             ;;
+        -i|--stdin)
+            STDINCONF=1
+            shift 1
+            ;;
         -d|--debug)
             DEBUG=1
             shift 1
@@ -48,10 +53,6 @@ while true ; do
             if [ "$1" = "--lttg" ]; then NGINX=1; fi
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}server-${SVC}.sh $2")
-            shift 2
-            ;;
-        --stdin)
-            STDINCONF=1
             shift 2
             ;;
 		--)

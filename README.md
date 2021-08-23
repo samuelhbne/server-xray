@@ -21,7 +21,7 @@ $ docker build -t samuelhbne/server-xray -f Dockerfile.amd64 .
 
 ```shell
 $ docker run --rm -it samuelhbne/server-xray
-server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain-name>] [-c|--cert-path <cert-path-root>] [-k|--hook <hook-url>]
+ <hook-url>]
     -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed
     -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed
     -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed
@@ -33,7 +33,8 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]
     --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
-    --stdin                            Read XRay config from stdin instead of auto generation
+    -i|--stdin                         Read XRay config from stdin instead of auto generation
+    -d|--debug                         Start Xray in debug mode with verbose output
 
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 -r mydomain.duckdns.org
@@ -65,8 +66,8 @@ proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [options]
     --mttw <VMESS-TCP-TLS-WS option>      id@host:port:/webpath
     --ttt  <TROJAN-TCP-TLS option>        password@host:port
     --tttw <TROJAN-TCP-TLS-WS option>     password@host:port:/webpath
-    -d|--debug                            Start in debug mode with DNS server disabled
-    --stdin                               Read XRay config from stdin instead of auto generation
+    -i|--stdin                            Read XRay config from stdin instead of auto generation
+    -d|--debug                            Start Xray in debug mode with verbose output
 
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
 --ltx myid@mydomain.duckdns.org:443
@@ -217,6 +218,7 @@ Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceNa
 ### 4. Running server-ray container in debug mode for connection issue diagnosis
 
 The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis.
+
 ```shell
 $ docker run --rm -p 80:80 -p 443:443 -it samuelhbne/server-xray \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
