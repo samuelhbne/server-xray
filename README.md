@@ -21,10 +21,12 @@ $ docker build -t samuelhbne/server-xray -f Dockerfile.amd64 .
 
 ```shell
 $ docker run --rm -it samuelhbne/server-xray
- <hook-url>]
+server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain-name>] [-c|--cert-path <cert-path-root>] [-k|--hook <hook-url>]
     -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed
     -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed
     -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed
+    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
+    -d|--debug                         [Optional] Start in debug mode with verbose output
     --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
     --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
     --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
@@ -33,8 +35,6 @@ $ docker run --rm -it samuelhbne/server-xray
     --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
     --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]
     --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
-    -i|--stdin                         Read XRay config from stdin instead of auto generation
-    -d|--debug                         Start Xray in debug mode with verbose output
 
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 -r mydomain.duckdns.org
@@ -57,17 +57,17 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 
 ```shell
 $ docker run --rm -it samuelhbne/proxy-xray
-proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [options]
-    --ltx  <VLESS-TCP-XTLS option>        id@host:port
-    --ltt  <VLESS-TCP-TLS option>         id@host:port
-    --lttw <VLESS-TCP-TLS-WS option>      id@host:port:/webpath
-    --lttg <VLESS-TCP-TLS-GRPC option>    id@host:port:/svcpath
-    --mtt  <VMESS-TCP-TLS option>         id@host:port
-    --mttw <VMESS-TCP-TLS-WS option>      id@host:port:/webpath
-    --ttt  <TROJAN-TCP-TLS option>        password@host:port
-    --tttw <TROJAN-TCP-TLS-WS option>     password@host:port:/webpath
-    -i|--stdin                            Read XRay config from stdin instead of auto generation
-    -d|--debug                            Start Xray in debug mode with verbose output
+proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [connect options] [-i|--stdin] [-d|--debug]
+    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
+    -d|--debug                         [Optional] Start in debug mode with verbose output
+    --ltx  <VLESS-TCP-XTLS option>     id@host:port
+    --ltt  <VLESS-TCP-TLS option>      id@host:port
+    --lttw <VLESS-TCP-TLS-WS option>   id@host:port:/webpath
+    --lttg <VLESS-TCP-TLS-GRPC option> id@host:port:/svcpath
+    --mtt  <VMESS-TCP-TLS option>      id@host:port
+    --mttw <VMESS-TCP-TLS-WS option>   id@host:port:/webpath
+    --ttt  <TROJAN-TCP-TLS option>     password@host:port
+    --tttw <TROJAN-TCP-TLS-WS option>  password@host:port:/webpath
 
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
 --ltx myid@mydomain.duckdns.org:443
