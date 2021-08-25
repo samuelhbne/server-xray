@@ -25,7 +25,7 @@ Please replace "amd64" with the arch match the current box accordingly. Support 
 ## How to start the container
 
 ```shell
-$ docker run --rm -it samuelhbne/server-xray
+$ docker run --rm samuelhbne/server-xray
 server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain-name>] [-c|--cert-path <cert-path-root>] [-k|--hook <hook-url>]
     -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed
     -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed
@@ -63,7 +63,7 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 ### Verifying server-xray connection with proxy-xray
 
 ```shell
-$ docker run --rm -it samuelhbne/proxy-xray
+$ docker run --rm samuelhbne/proxy-xray
 proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [connect options] [-i|--stdin] [-d|--debug]
     -i|--stdin                         [Optional] Read config from stdin instead of auto generation
     -d|--debug                         [Optional] Start in debug mode with verbose output
@@ -135,7 +135,7 @@ myid@mydomain.duckdns.org:443
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 
-$ docker exec -it proxy-xray /status.sh
+$ docker exec -t proxy-xray /status.sh
 VPS-Server: domain1.duckdns.org
 Xray-URL: vless://myid@domain1.duckdns.org:443?security=xtls&type=tcp&flow=xtls-rprx-direct#domain1.duckdns.org:443
 [QR-Code]
@@ -151,7 +151,7 @@ trojan_pass@domain2.duckdns.org:8443
 $ curl -sSx socks5h://127.0.0.1:2080 http://ifconfig.co
 12.34.56.78
 
-$ docker exec -it proxy-xray2 /status.sh
+$ docker exec -t proxy-xray2 /status.sh
 VPS-Server: mydomain.duckdns.org
 Xray-URL: trojan://trojan_pass@domain2.duckdns.org:8443#domain2.duckdns.org:8443
 [QR-Code]
@@ -184,7 +184,7 @@ myid@mydomain.duckdns.org:443:/websocket
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 
-$ docker exec -it proxy-xray /status.sh
+$ docker exec -t proxy-xray /status.sh
 VPS-Server: mydomain.duckdns.org
 Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=ws&path=%2Fwebsocket#mydomain.duckdns.org:443
 [QR-Code]
@@ -217,7 +217,7 @@ myid@mydomain.duckdns.org:443:/gsvc
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 
-$ docker exec -it proxy-xray /status.sh
+$ docker exec -t proxy-xray /status.sh
 VPS-Server: mydomain.duckdns.org
 Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceName=/gsvc&mode=gun#mydomain.duckdns.org:443
 [QR-Code]
@@ -229,7 +229,7 @@ Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceNa
 The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis.
 
 ```shell
-$ docker run --rm -p 80:80 -p 443:443 -it samuelhbne/server-xray \
+$ docker run --rm -p 80:80 -p 443:443 samuelhbne/server-xray \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 --mttw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
 -r mydomain.duckdns.org --debug
