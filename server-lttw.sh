@@ -80,11 +80,11 @@ do
 
     if [ -z "${uopt[0]}" ]; then
         echo "Incorrect user format: ${xu}"
-        echo "Correct user format: user=<uuid>[:level:email]"
-        echo "Like: user=805b2209-c26f-48d6-ba52-07b7d894f962:0:me@g.cn"
-        echo "Like: user=805b2209-c26f-48d6-ba52-07b7d894f962::me@g.cn"
-        echo "Like: user=805b2209-c26f-48d6-ba52-07b7d894f962:0"
-        echo "Like: user=805b2209-c26f-48d6-ba52-07b7d894f962"
+        echo "Correct user format: user=<uid>[:level:email]"
+        echo "Like: user=myid:0:nobody@g.cn"
+        echo "Like: user=myid::nobody@g.cn"
+        echo "Like: user=myid:0"
+        echo "Like: user=myid"
         exit 1
     fi
     if [ -z "${uopt[1]}" ]; then

@@ -32,14 +32,14 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed
     -i|--stdin                         [Optional] Read config from stdin instead of auto generation
     -d|--debug                         [Optional] Start in debug mode with verbose output
-    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --lttg <VLESS-TCP-TLS-GRPC option> [p=443,]d=domain.com,u=id[:level[:email]],s=/svcpath,g=grpcport
-    --mtt  <VMESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]]
-    --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
-    --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]]
-    --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=passwd[:email][,f=[fallback-host]:fb-port:[fb-path]],w=/webpath
+    --mtt  <VMESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
 
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
@@ -64,9 +64,17 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 
 ```shell
 $ docker run --rm samuelhbne/proxy-xray
-proxy-xray --<ltx|ltt|lttw|mtt|mttw|ttt|tttw|ssa|sst|stdin> [connect options] [-i|--stdin] [-d|--debug]
+proxy-xray <connection-options>
     -i|--stdin                         [Optional] Read config from stdin instead of auto generation
     -d|--debug                         [Optional] Start in debug mode with verbose output
+    --dns <upstream-DNS-ip>            [Optional] Designated upstream DNS server ip, 1.1.1.1 will be applied by default
+    --china-direct                     [Optional] Add routing rules to avoid domain and ip located in China being proxied
+    --domain-direct <domain-rule>      [Optional] Add a domain rule for direct routing, likegeosite:geosite:geolocation-cn
+    --domain-proxy  <domain-rule>      [Optional] Add a domain rule for proxy routing, like twitter.com or geosite:google-cn
+    --domain-block  <domain-rule>      [Optional] Add a domain rule for block routing, like geosite:category-ads-all
+    --ip-direct     <ip-rule>          [Optional] Add a ip-addr rule for direct routing, like 114.114.114.114/32 or geoip:cn
+    --ip-proxy      <ip-rule>          [Optional] Add a ip-addr rule for proxy routing, like 1.1.1.1/32 or geoip:netflix
+    --ip-block      <ip-rule>          [Optional] Add a ip-addr rule for block routing, like geoip:private
     --ltx  <VLESS-TCP-XTLS option>     id@host:port
     --ltt  <VLESS-TCP-TLS option>      id@host:port
     --lttw <VLESS-TCP-TLS-WS option>   id@host:port:/webpath

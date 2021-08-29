@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-ttt <xconf=xray-config-file>,<certpath=cert-path-root>,<port=443>,<domain=mydomain.com>,<user=password[:0[:a@mail.com]]>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
+    echo "Usage: server-ttt <xconf=xray-config-file>,<certpath=cert-path-root>,<port=443>,<domain=mydomain.com>,<user=password[:level[:email]]>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -71,16 +71,21 @@ do
 
     if [ -z "${uopt[0]}" ]; then
         echo "Incorrect user format: ${xu}"
-        echo "Correct user format: user=<password>[:email]"
-        echo "Like: user=trojan_pass:me@g.cn"
-        echo "Like: user=trojan_pass"
+        echo "Correct user format: user=password[:level[:email]"
+        echo "Like: user=mypass:0:me@g.cn"
+        echo "Like: user=mypass::me@g.cn"
+        echo "Like: user=mypass:0"
+        echo "Like: user=mypass"
         exit 1
     fi
     if [ -z "${uopt[1]}" ]; then
-        uopt[1]="nobody@g.cn"
+        uopt[1]=0
     fi
-    cat $XCONF |jq --arg port "${port}" --arg password "${uopt[0]}" --arg email "${uopt[1]}" \
-    '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"password":$password, "email":$email} ] ' \
+    if [ -z "${uopt[2]}" ]; then
+        uopt[2]="nobody@g.cn"
+    fi
+    cat $XCONF |jq --arg port "${port}" --arg pass "${uopt[0]}" --arg level "${uopt[1]}" --arg email "${uopt[2]}" \
+    '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"password":$pass, "level":($level|tonumber), "email":$email} ] ' \
     |sponge $XCONF
 done
 
