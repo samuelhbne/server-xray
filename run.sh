@@ -38,7 +38,7 @@ while true ; do
             shift 2
             ;;        
         -c|--cert-path)
-            CERTPATH+="$2"
+            CERTPATH+=("$2")
             shift 2
             ;;
         -i|--stdin)
