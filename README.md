@@ -15,11 +15,14 @@ $ docker build -t samuelhbne/server-xray -f Dockerfile.amd64 .
 
 ### NOTE1
 
-Please replace "amd64" with the arch match the current box accordingly. Support platforms:
+Please replace "amd64" with the arch match the current box accordingly. Other supported platforms:
 
-- "arm64" for arm64v8 platforms, Raspberry Pi with Ubuntu-arm64 running, AWS A1, t4g instances etc.
-- "arm" for arm32v7 platforms, most Raspberry-Pi releases (except Pi1 and Pi-zero) with Raspbian running.
-- arm32v6 platforms (Pi1 and Pi-zero) users need to build the docker images from source rather than run it directly, due to the known issue from upstream Alpine image. WIP.
+- "arm64" for arm64v8 platforms. Support AWS A1, t4g instances as well as Raspberry Pi4 with 64bits OS like [Ubuntu arm64](https://ubuntu.com/download/raspberry-pi) or [Debian](https://raspi.debian.net/tested-images/).
+- "arm" for arm32v7 platforms. Support most Raspberry-Pi releases (Pi2, Pi3, Pi4) with 32bits OS like [Ubuntu armhf](https://ubuntu.com/download/raspberry-pi), [Debian](https://raspi.debian.net/tested-images/) or [Raspberry Pi OS](https://www.raspberrypi.org/software/operating-systems/).
+
+### NOTE2
+
+- arm32v6 (Pi1 and Pi-zero) users should build the docker images from source rather than run it directly, due to the known issue from upstream Alpine image. WIP.
 - arm32v5 platforms are not supported yet.
 
 ## How to start the container
@@ -48,7 +51,7 @@ $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 ...
 ```
 
-### NOTE2
+### NOTE3
 
 - Please replace the port 443 (-p 443:2443) with the port number you choose for incoming connection.
 - Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
@@ -67,14 +70,16 @@ $ docker run --rm samuelhbne/proxy-xray
 proxy-xray <connection-options>
     -i|--stdin                         [Optional] Read config from stdin instead of auto generation
     -d|--debug                         [Optional] Start in debug mode with verbose output
-    --dns <upstream-DNS-ip>            [Optional] Designated upstream DNS server ip, 1.1.1.1 will be applied by default
-    --china-direct                     [Optional] Add routing rules to avoid domain and ip located in China being proxied
+    --dns <upstream-DNS-ip>            [Optional] Designated upstream DNS server IP, 1.1.1.1 will be applied by default
+    --dns-local <local-conf-file>      [Optional] Enable designated domain conf file. Like apple.china.conf
+    --dns-local-cn                     [Optional] Enable China related domains to be resolved in China
     --domain-direct <domain-rule>      [Optional] Add a domain rule for direct routing, likegeosite:geosite:geolocation-cn
     --domain-proxy  <domain-rule>      [Optional] Add a domain rule for proxy routing, like twitter.com or geosite:google-cn
     --domain-block  <domain-rule>      [Optional] Add a domain rule for block routing, like geosite:category-ads-all
     --ip-direct     <ip-rule>          [Optional] Add a ip-addr rule for direct routing, like 114.114.114.114/32 or geoip:cn
     --ip-proxy      <ip-rule>          [Optional] Add a ip-addr rule for proxy routing, like 1.1.1.1/32 or geoip:netflix
     --ip-block      <ip-rule>          [Optional] Add a ip-addr rule for block routing, like geoip:private
+    --cn-direct                        [Optional] Add routing rules to avoid domains and IPs located in China being proxied
     --ltx  <VLESS-TCP-XTLS option>     id@host:port
     --ltt  <VLESS-TCP-TLS option>      id@host:port
     --lttw <VLESS-TCP-TLS-WS option>   id@host:port:/webpath
@@ -92,7 +97,7 @@ $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
 ```
 
-### NOTE3
+### NOTE4
 
 #### How it works
 
