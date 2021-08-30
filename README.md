@@ -68,18 +68,6 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 ```shell
 $ docker run --rm samuelhbne/proxy-xray
 proxy-xray <connection-options>
-    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
-    -d|--debug                         [Optional] Start in debug mode with verbose output
-    --dns <upstream-DNS-ip>            [Optional] Designated upstream DNS server IP, 1.1.1.1 will be applied by default
-    --dns-local <local-conf-file>      [Optional] Enable designated domain conf file. Like apple.china.conf
-    --dns-local-cn                     [Optional] Enable China related domains to be resolved in China
-    --domain-direct <domain-rule>      [Optional] Add a domain rule for direct routing, likegeosite:geosite:geolocation-cn
-    --domain-proxy  <domain-rule>      [Optional] Add a domain rule for proxy routing, like twitter.com or geosite:google-cn
-    --domain-block  <domain-rule>      [Optional] Add a domain rule for block routing, like geosite:category-ads-all
-    --ip-direct     <ip-rule>          [Optional] Add a ip-addr rule for direct routing, like 114.114.114.114/32 or geoip:cn
-    --ip-proxy      <ip-rule>          [Optional] Add a ip-addr rule for proxy routing, like 1.1.1.1/32 or geoip:netflix
-    --ip-block      <ip-rule>          [Optional] Add a ip-addr rule for block routing, like geoip:private
-    --cn-direct                        [Optional] Add routing rules to avoid domains and IPs located in China being proxied
     --ltx  <VLESS-TCP-XTLS option>     id@host:port
     --ltt  <VLESS-TCP-TLS option>      id@host:port
     --lttw <VLESS-TCP-TLS-WS option>   id@host:port:/webpath
@@ -88,6 +76,19 @@ proxy-xray <connection-options>
     --mttw <VMESS-TCP-TLS-WS option>   id@host:port:/webpath
     --ttt  <TROJAN-TCP-TLS option>     password@host:port
     --tttw <TROJAN-TCP-TLS-WS option>  password@host:port:/webpath
+    -d|--debug                         [Optional] Start in debug mode with verbose output
+    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
+    --dns <upstream-DNS-ip>            [Optional] Designated upstream DNS server IP, 1.1.1.1 will be applied by default
+    --dns-local <local-conf-file>      [Optional] Enable designated domain conf file. Like apple.china.conf
+    --dns-local-cn                     [Optional] Enable China-accessible domains to be resolved in China
+    --domain-direct <domain-rule>      [Optional] Add a domain rule for direct routing, likegeosite:geosite:geolocation-cn
+    --domain-proxy  <domain-rule>      [Optional] Add a domain rule for proxy routing, like twitter.com or geosite:google-cn
+    --domain-block  <domain-rule>      [Optional] Add a domain rule for block routing, like geosite:category-ads-all
+    --ip-direct     <ip-rule>          [Optional] Add a ip-addr rule for direct routing, like 114.114.114.114/32 or geoip:cn
+    --ip-proxy      <ip-rule>          [Optional] Add a ip-addr rule for proxy routing, like 1.1.1.1/32 or geoip:netflix
+    --ip-block      <ip-rule>          [Optional] Add a ip-addr rule for block routing, like geoip:private
+    --cn-direct                        [Optional] Add routing rules to avoid domains and IPs located in China being proxied
+    --rules-path    <rules-dir-path>   [Optional] Folder path contents geoip.dat, geosite.dat and other rule files
 
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
 --ltx myid@mydomain.duckdns.org:443
