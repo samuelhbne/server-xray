@@ -29,12 +29,6 @@ Please replace "amd64" with the arch match the current box accordingly. Other su
 
 ```shell
 $ docker run --rm samuelhbne/server-xray
-server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain-name>] [-c|--cert-path <cert-path-root>] [-k|--hook <hook-url>]
-    -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed
-    -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed
-    -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed
-    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
-    -d|--debug                         [Optional] Start in debug mode with verbose output
     --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
     --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
     --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
@@ -43,6 +37,11 @@ server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain
     --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
     --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit
+    -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert
+    -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
+    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
+    -d|--debug                         [Optional] Start in debug mode with verbose output
 
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \

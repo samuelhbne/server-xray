@@ -5,12 +5,7 @@ DIR="$(cd $DIR; pwd)"
 XCONF=/tmp/server-xray.json
 
 usage() {
-    echo "server-xray --<ltx|ltt|lttw|mtt|mttw|ttt> <options> [-r|--request-domain <domain-name>] [-c|--cert-path <cert-path-root>] [-k|--hook <hook-url>]"
-    echo "    -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit. Multiple allowed"
-    echo "    -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert. Multiple allowed"
-    echo "    -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/. Multiple allowed"
-    echo "    -i|--stdin                         [Optional] Read config from stdin instead of auto generation"
-    echo "    -d|--debug                         [Optional] Start in debug mode with verbose output"
+    echo "server-xray <server-options>"
     echo "    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
     echo "    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
     echo "    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
@@ -21,6 +16,11 @@ usage() {
     echo "    --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
 #   echo "    --ssa  <Shadowsocks-AEAD option>   [port=443,]user=password1:method1[,user=password2:method2]"
 #   echo "    --sst  <Shadowsocks-TCP option>    [port=443,]user=passwd,method=xxxx"
+    echo "    -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit"
+    echo "    -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert"
+    echo "    -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/"
+    echo "    -i|--stdin                         [Optional] Read config from stdin instead of auto generation"
+    echo "    -d|--debug                         [Optional] Start in debug mode with verbose output"
 }
 
 TEMP=`getopt -o k:r:c:di --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,mtt:,mttw:,ttt:,tttw:,lttg:,ssa:,sst:stdin,debug -n "$0" -- $@`
