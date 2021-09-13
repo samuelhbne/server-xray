@@ -29,19 +29,26 @@ Please replace "amd64" with the arch match the current box accordingly. Other su
 
 ```shell
 $ docker run --rm samuelhbne/server-xray
-    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --lttg <VLESS-TCP-TLS-GRPC option> [p=443,]d=domain.com,u=id[:level[:email]],s=/svcpath,g=grpcport
-    --mtt  <VMESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit
-    -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert
-    -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
-    -i|--stdin                         [Optional] Read config from stdin instead of auto generation
-    -d|--debug                         [Optional] Start in debug mode with verbose output
+server-xray <server-options>
+    --ltx  <VLESS-TCP-XTLS option>        [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --ltt  <VLESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --lttw <VLESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --ltpw <VLESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --lttg <VLESS-TCP-TLS-GRPC option>    [p=443,]d=domain.com,u=id[:level[:email]],s=/svcpath
+    --ltpg <VLESS-TCP-PLAIN-GRPC option>  [p=443,]u=id[:level[:email]],s=/svcpath
+    --mtt  <VMESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --mttw <VMESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --mtpw <VMESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --ttt  <TROJAN-TCP-TLS option>        [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
+    --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
+    --ng-opt <nginx-options>              [p=443,]d=domain.com
+    --ng-proxy <nginx-proxy-options>      [h=127.0.0.1,]p=8443,l=location,n=ws|grpc
+    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
+    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
+    -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
+    -i|--stdin                            [Optional] Read config from stdin instead of auto generation
+    -d|--debug                            [Optional] Start in debug mode with verbose output
 
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 --ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
@@ -101,7 +108,7 @@ $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 #### How it works
 
 - proxy-xray created a SOCKS5 proxy that tunneling traffic through your Xray server.
-- curl qery was sent to ifconfig.co via the SOCKS5 proxy served by proxy-xray.
+- curl query was sent to ifconfig.co via the SOCKS5 proxy served by proxy-xray.
 - Like this: curl --> proxy-xray --> server-xray --> ifconfig.co website.
 - You should get the public IP address of server-xray if all go well.
 - Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) for more details.
@@ -125,7 +132,10 @@ The following command will:
 2. Request TLS certs from Letsencrypt for domain1 and domain2
 3. Create Vless+TLS+Websocket server on port 443 with the cert of domain1
 4. Create Trojan server on port 8443 with the cert of domain2 as fallback
-5. Port 80 must be exported for domain ownership verification
+
+### NOTE5
+
+Port 80 must be exported for TLS domain ownership verification
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
@@ -203,20 +213,21 @@ Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=ws&path=%2Fweb
 ...
 ```
 
-### 3. Running a Vless+TCP+TLS+gRPC server with Nginx in front of, with existing TLS cert
+### 3. Running a Vless+TCP+PLAN+gRPC server + Nginx TLS front, with existing TLS cert
 
 The following command will:
 
 1. Assume to read TLS cert from /home/ubuntu/cert/mydomain.duckdns.org/fullchain.cer
 2. Assume to read private key from  /home/ubuntu/cert/mydomain.duckdns.org/mydomain.duckdns.org.key
 3. Assume mydomain.duckdns.org has been resolved to the current server
-4. Run Xray in Vless+TCP+TLS+gRPC mode on port 65443 with the given cert
-5. Run nginx on port 443 as a front to protect gRPC backend from detection
+4. Run Xray in Vless+TCP+PLAN+gRPC mode on port 65443
+5. Run nginx on port 443 as a TLS front to protect gRPC backend from detection, with the given cert
 6. Only port 443 will be available for access from internet
 
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
--c /opt/cert --lttg port=443,domain=mydomain.duckdns.org,user=myid,service=/gsvc,gport=65443
+-c /opt/cert --ltpg port=65443,user=myid,service=/gsvc \
+--ng-opt port=443,domain=mydomain.duckdns.org --ng-proxy port=65443,location=/gsvc,network=grpc
 ...
 ```
 
@@ -236,7 +247,50 @@ Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceNa
 ...
 ```
 
-### 4. Running server-ray container in debug mode for connection issue diagnosis
+### 4. Server multiple services on a single port with Nginx TLS front
+
+The following command will:
+
+1. Assume to read TLS cert from /home/ubuntu/cert/mydomain.duckdns.org/fullchain.cer
+2. Assume to read private key from  /home/ubuntu/cert/mydomain.duckdns.org/mydomain.duckdns.org.key
+3. Assume mydomain.duckdns.org has been resolved to the current server
+4. Run Vless+TCP+PLAN+gRPC service on port 55443, location /svc0
+5. Run Vless+TCP+PLAN+WebSocket service on port 53443, location /ws1
+6. Run Trojan+TCP+PLAN+WebSocket service on port 51443, location /ws2
+7. Run nginx on port 443 as a TLS front with the given cert, proxy all 3 services with 3 different locations
+8. Only port 443 will be available for access from internet
+
+```shell
+$ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray -c /opt/cert \
+--ltpg p=55443,u=myid0,s=/svc0 \
+--ltpw p=53443,u=myid1,w=/ws1 \
+--ttpw p=51443,u=myid2,w=/ws2 \
+--ng-opt p=443,d=mydomain.duckdns.org \
+--ng-proxy p=55443,l=/svc0,n=grpc \
+--ng-proxy p=53443,l=/ws1,n=ws \
+--ng-proxy p=51443,l=/ws2,n=ws
+...
+```
+
+#### Multiple service connection verifying instructions
+
+```shell
+$ docker run --name proxy-gsvc -p 1080:1080 -d samuelhbne/proxy-xray --lttg myid0@mydomain.duckdns.org:443:/gsvc
+$ docker run --name proxy-vless -p 2080:1080 -d samuelhbne/proxy-xray --lttw myid1@mydomain.duckdns.org:443:/ws1
+$ docker run --name proxy-trojan -p 3080:1080 -d samuelhbne/proxy-xray --tttw myid2@mydomain.duckdns.org:443:/ws2
+
+$ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
+12.34.56.78
+
+$ curl -sSx socks5h://127.0.0.1:2080 http://ifconfig.co
+12.34.56.78
+
+$ curl -sSx socks5h://127.0.0.1:3080 http://ifconfig.co
+12.34.56.78
+...
+```
+
+### 5. Running server-ray container in debug mode for connection issue diagnosis
 
 The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis.
 
