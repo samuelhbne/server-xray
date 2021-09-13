@@ -56,7 +56,6 @@ while true ; do
             shift 1
             ;;
         --ltx|--ltt|--lttw|--ltpw|--lttg|--ltpg|--mtt|--mttw|--mtpw|--ttt|--tttw|--ttpw)
-            if [ "$1" = "--lttg" ]; then NGINX=1; fi
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}server-${SVC}.sh $2")
             shift 2
