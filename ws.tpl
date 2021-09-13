@@ -3,7 +3,7 @@
             return 404;
         }
         proxy_redirect off;
-        proxy_pass http://127.0.0.1:PORT;
+        proxy_pass http://HOST:PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";

@@ -126,6 +126,8 @@ do
         esac
     done
 
+    if [ -z "${xhost}" ]; then xhost="127.0.0.1"; fi
+
     # Replace the last(only) single line '}' with specific tpl file, hence insert a new section into the Nginx config file
     case "${xnetwork}" in
         ws|websocket)
@@ -138,6 +140,7 @@ do
     # Then add '}' to the end of the Nginx config file
     echo -e "\n}" >> site-xray.conf
     ESC_LOCATION=$(printf '%s\n' "${xlocation}" | sed -e 's/[]\/$*.^[]/\\&/g')
+    sed -i "s/HOST/${xhost}/g" site-xray.conf
     sed -i "s/PORT/${xport}/g" site-xray.conf
     sed -i "s/LOCATION/${ESC_LOCATION}/g" site-xray.conf
 done
