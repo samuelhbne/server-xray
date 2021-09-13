@@ -260,6 +260,10 @@ The following command will:
 7. Run nginx on port 443 as a TLS front with the given cert, proxy all 3 services with 3 different locations
 8. Only port 443 will be available for access from internet
 
+### NOTE6
+
+Only PLAN (NON-TLS) services (--ltpg, --ltpw, --mtpw, -ttpw) can be proxied by Nginx.
+
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray -c /opt/cert \
 --ltpg p=55443,u=myid0,s=/svc0 \
