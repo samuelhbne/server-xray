@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-lttw <xconf=xray-config-file>,<certpath=cert-path-root>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>,<path=websocket-path>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
+    echo "Usage: server-mtpw <xconf=xray-config-file>,<port=443>,<user=myid[:0[:a@mail.com]]>,<path=websocket-path>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -12,14 +12,8 @@ do
         x|xconf)
             xconf="${kv[1]}"
             ;;
-        c|certpath)
-            certpath+=("${kv[1]}")
-            ;;
         p|port)
             port="${kv[1]}"
-            ;;
-        d|domain)
-            domain="${kv[1]}"
             ;;
         u|user)
             xuser+=("${kv[1]}")
@@ -33,12 +27,6 @@ do
     esac
 done
 
-if [ -z "${certpath}" ]; then
-    echo "Error: certpath undefined."
-    usage
-    exit 1
-fi
-
 if [ -z "${xconf}" ]; then
     echo "Error: xconf undefined."
     usage
@@ -47,12 +35,6 @@ fi
 
 if [ -z "${port}" ]; then
     port=443
-fi
-
-if [ -z "${domain}" ]; then
-    echo "Error: domain undefined."
-    usage
-    exit 1
 fi
 
 if [ -z "${xuser}" ]; then
@@ -70,7 +52,7 @@ fi
 if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
 XCONF=$xconf
-cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
+cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vmess", "settings":{"clients":[]}}]' |sponge $XCONF
 
 for xu in "${xuser[@]}"
 do
@@ -142,32 +124,9 @@ do
 done
 
 cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"ws", "security":"tls"} ' \
-|sponge $XCONF
-
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/1.1"]}} ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"ws", "security":"none" } ' \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" --arg wspath "${wspath}" \
 '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"wsSettings":{"path":$wspath}} ' \
-|sponge $XCONF
-
-for certroot in "${certpath[@]}"
-do
-    if [ -f "${certroot}/${domain}/fullchain.cer" ] && [ -f "${certroot}/${domain}/${domain}.key" ]; then
-        fullchain="${certroot}/${domain}/fullchain.cer"
-        prvkey="${certroot}/${domain}/${domain}.key"
-        break
-    fi
-done
-
-if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
-    echo "TLS cert missing?"
-    echo "Abort."
-    exit 2
-fi
-
-cat $XCONF |jq --arg port "${port}" --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings.tlsSettings ) += {"certificates":[{"certificateFile":$fullchain, "keyFile":$prvkey}]} ' \
 |sponge $XCONF

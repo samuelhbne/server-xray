@@ -6,24 +6,30 @@ XCONF=/tmp/server-xray.json
 
 usage() {
     echo "server-xray <server-options>"
-    echo "    --ltx  <VLESS-TCP-XTLS option>     [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --ltt  <VLESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --lttw <VLESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --lttg <VLESS-TCP-TLS-GRPC option> [p=443,]d=domain.com,u=id[:level[:email]],s=/svcpath,g=grpcport"
-    echo "    --mtt  <VMESS-TCP-TLS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --mttw <VMESS-TCP-TLS-WS option>   [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --ttt  <TROJAN-TCP-TLS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --tttw <TROJAN-TCP-TLS-WS option>  [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-#   echo "    --ssa  <Shadowsocks-AEAD option>   [port=443,]user=password1:method1[,user=password2:method2]"
-#   echo "    --sst  <Shadowsocks-TCP option>    [port=443,]user=passwd,method=xxxx"
-    echo "    -k|--hook <hook-url>               [Optional] DDNS update or notifing URL to be hit"
-    echo "    -r|--request-domain <domain-name>  [Optional] Domain name to request for letsencrypt cert"
-    echo "    -c|--cert-path <cert-path-root>    [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/"
-    echo "    -i|--stdin                         [Optional] Read config from stdin instead of auto generation"
-    echo "    -d|--debug                         [Optional] Start in debug mode with verbose output"
+    echo "    --ltx  <VLESS-TCP-XTLS option>        [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
+    echo "    --ltt  <VLESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
+    echo "    --lttw <VLESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
+    echo "    --ltpw <VLESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
+    echo "    --lttg <VLESS-TCP-TLS-GRPC option>    [p=443,]d=domain.com,u=id[:level[:email]],s=/svcpath"
+    echo "    --ltpg <VLESS-TCP-PLAIN-GRPC option>  [p=443,]u=id[:level[:email]],s=/svcpath"
+    echo "    --mtt  <VMESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
+    echo "    --mttw <VMESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
+    echo "    --mtpw <VMESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
+    echo "    --ttt  <TROJAN-TCP-TLS option>        [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
+    echo "    --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
+    echo "    --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
+#   echo "    --ssa  <Shadowsocks-AEAD option>      [port=443,]user=password1:method1[,user=password2:method2]"
+#   echo "    --sst  <Shadowsocks-TCP option>       [port=443,]user=passwd,method=xxxx"
+    echo "    --ng-opt <nginx-options>              [p=443,]d=domain.com"
+    echo "    --ng-proxy <nginx-proxy-options>      [h=127.0.0.1,]p=8443,l=location,n=ws|grpc"
+    echo "    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit"
+    echo "    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert"
+    echo "    -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/"
+    echo "    -i|--stdin                            [Optional] Read config from stdin instead of auto generation"
+    echo "    -d|--debug                            [Optional] Start in debug mode with verbose output"
 }
 
-TEMP=`getopt -o k:r:c:di --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,mtt:,mttw:,ttt:,tttw:,lttg:,ssa:,sst:stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o k:r:c:di --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,ltpw:,mtt:,mttw:,mtpw:,ttt:,tttw:,ttpw:,lttg:,ltpg:,ssa:,sst:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -49,10 +55,18 @@ while true ; do
             DEBUG=1
             shift 1
             ;;
-        --ltx|--ltt|--lttw|--lttg|--mtt|--mttw|--ttt|--tttw)
+        --ltx|--ltt|--lttw|--ltpw|--lttg|--ltpg|--mtt|--mttw|--mtpw|--ttt|--tttw|--ttpw)
             if [ "$1" = "--lttg" ]; then NGINX=1; fi
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}server-${SVC}.sh $2")
+            shift 2
+            ;;
+        --ng-opt)
+            NGOPT=$2
+            shift 2
+            ;;
+        --ng-proxy)
+            NGPROXY+=("$2")
             shift 2
             ;;
 		--)
@@ -117,14 +131,26 @@ if [ -n "${SVCMD}" ]; then
             exit 1
         fi
     done
+
     if [ "${DEBUG}" = "1" ]; then
         cat $XCONF |jq '.log.loglevel |="debug"' |sponge $XCONF
         echo
         cat $XCONF
         echo
     fi
-    if [ "${NGINX}" = "1" ]; then nginx; fi
+
+    if [ -n "${NGOPT}" ]; then
+        ngcmd="${DIR}server-nginx.sh --ng-opt ${NGOPT},$xopt"
+        for ngproxy in "${NGPROXY[@]}"
+        do
+            ngcmd="${ngcmd} --ng-proxy ${ngproxy}"
+        done
+        $ngcmd
+        nginx;
+    fi
+
     exec /usr/local/bin/xray -c $XCONF
+
 else
     if [ "${STDINCONF}" = "1" ]; then
         exec /usr/local/bin/xray
