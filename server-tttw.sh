@@ -70,6 +70,8 @@ fi
 if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
 XCONF=$xconf
+# Remove existing port number if existing.
+cat $XCONF |jq --arg port "${port}" 'del( .inbounds[] | select(.port == ($port|tonumber)) )' |sponge $XCONF
 cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"trojan", "settings":{"clients":[]}}]' |sponge $XCONF
 
 for xu in "${xuser[@]}"
