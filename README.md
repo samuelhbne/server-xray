@@ -226,8 +226,10 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
--c /opt/cert --ltpg port=65443,user=myid,service=/gsvc \
---ng-opt port=443,domain=mydomain.duckdns.org --ng-proxy port=65443,location=/gsvc,network=grpc
+-c /opt/cert --ng-opt port=443,domain=mydomain.duckdns.org \
+--ltpg port=65443,user=myid,service=gsvc \
+--ng-proxy port=65443,location=/gsvc,network=grpc
+
 ...
 ```
 
@@ -235,7 +237,7 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttg \
-myid@mydomain.duckdns.org:443:/gsvc
+myid@mydomain.duckdns.org:443:gsvc
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
@@ -260,13 +262,9 @@ The following command will:
 7. Run nginx on port 443 as a TLS front with the given cert, proxy all 3 services with 3 different locations
 8. Only port 443 will be available for access from internet
 
-### NOTE6
-
-Only PLAN (NON-TLS) services (--ltpg, --ltpw, --mtpw, -ttpw) can be proxied by Nginx.
-
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray -c /opt/cert \
---ltpg p=55443,u=myid0,s=/svc0 \
+--ltpg p=55443,u=myid0,s=svc0 \
 --ltpw p=53443,u=myid1,w=/ws1 \
 --ttpw p=51443,u=myid2,w=/ws2 \
 --ng-opt p=443,d=mydomain.duckdns.org \
@@ -275,6 +273,10 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 --ng-proxy p=51443,l=/ws2,n=ws
 ...
 ```
+
+### NOTE6
+
+Only PLAN (NON-TLS) services (--ltpg, --ltpw, --mtpw, -ttpw) can be proxied by Nginx.
 
 #### Multiple service connection verifying instructions
 
