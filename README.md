@@ -307,3 +307,7 @@ docker buildx build --platform=linux/arm/v6 -t samuelhbne/server-xray:armv6 -f D
 docker buildx build --platform=linux/arm64 -t samuelhbne/server-xray:arm64 -f Dockerfile.arm64 .
 docker buildx build --platform=linux/amd64 -t samuelhbne/server-xray:amd64 -f Dockerfile.amd64 .
 ```
+
+## Credits
+
+Thanks to [RPRX](https://github.com/RPRX) for the [Xray](https://github.com/XTLS/Xray-core) project.
