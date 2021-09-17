@@ -274,7 +274,7 @@ $ docker run --rm -p 80:80 -p 443:443 samuelhbne/server-xray \
 ...
 ```
 
-## [Optional] Build server-xray docker image from source
+## Build server-xray docker image from source
 
 ### Build the docker image matches the current host architecture
 
