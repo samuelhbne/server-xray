@@ -302,8 +302,8 @@ Please replace "amd64" with the arch match the current box accordingly. Other su
 Please refer the [official doc](https://docs.docker.com/engine/reference/commandline/buildx_install/) for docker-buildx installation
 
 ```shell
-docker buildx build --platform=linux/arm/v7 -t samuelhbne/proxy-xray:armv7 -f Dockerfile.arm .
-docker buildx build --platform=linux/arm/v6 -t samuelhbne/proxy-xray:armv6 -f Dockerfile.arm .
-docker buildx build --platform=linux/arm64 -t samuelhbne/proxy-xray:arm64 -f Dockerfile.arm64 .
-docker buildx build --platform=linux/amd64 -t samuelhbne/proxy-xray:amd64 -f Dockerfile.amd64 .
+docker buildx build --platform=linux/arm/v7 -t samuelhbne/server-xray:armv7 -f Dockerfile.arm .
+docker buildx build --platform=linux/arm/v6 -t samuelhbne/server-xray:armv6 -f Dockerfile.arm .
+docker buildx build --platform=linux/arm64 -t samuelhbne/server-xray:arm64 -f Dockerfile.arm64 .
+docker buildx build --platform=linux/amd64 -t samuelhbne/server-xray:amd64 -f Dockerfile.amd64 .
 ```
