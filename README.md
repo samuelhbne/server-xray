@@ -215,7 +215,7 @@ Xray-URL: vless://myid@mydomain.duckdns.org:443?security=tls&type=grpc&serviceNa
 ...
 ```
 
-### 4. Server multiple services on a single port with Nginx TLS front
+### 4. Serve multiple services on a single port with Nginx TLS front
 
 The following command will:
 
@@ -289,7 +289,7 @@ $ docker build -t samuelhbne/server-xray -f Dockerfile.amd64 .
 
 Please replace "amd64" with the arch match the current box accordingly. Other supported platforms:
 
-- "arm64" for arm64v8 platforms. Support AWS A1, t4g instances as well as Raspberry Pi4 with 64bits OS like [Ubuntu arm64](https://ubuntu.com/download/raspberry-pi) or [Debian](https://raspi.debian.net/tested-images/).
+- "arm64" for arm64v8 platforms. Support AWS A1, t4g instances as well as Apple M1, Raspberry Pi4 with 64bits OS like [Ubuntu arm64](https://ubuntu.com/download/raspberry-pi) or [Debian](https://raspi.debian.net/tested-images/).
 - "arm" for arm32v7 platforms. Support most Raspberry-Pi releases (Pi2, Pi3, Pi4) with 32bits OS like [Ubuntu armhf](https://ubuntu.com/download/raspberry-pi), [Debian](https://raspi.debian.net/tested-images/) or [Raspberry Pi OS](https://www.raspberrypi.org/software/operating-systems/).
 
 ### NOTE 6
