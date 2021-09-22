@@ -71,7 +71,7 @@ server-xray <server-options>
     --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --ng-opt <nginx-options>              [p=443,]d=domain.com
-    --ng-proxy <nginx-proxy-options>      [h=127.0.0.1,]p=8443,l=location,n=ws|grpc
+    --ng-proxy <nginx-proxy-options>      [d=domain.com,][h=127.0.0.1,]p=8443,l=location,n=ws|grpc
     -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
     -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
     -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
@@ -221,11 +221,11 @@ The following command will:
 
 1. Assume to read TLS cert from /home/ubuntu/cert/mydomain.duckdns.org/fullchain.cer
 2. Assume to read private key from  /home/ubuntu/cert/mydomain.duckdns.org/mydomain.duckdns.org.key
-3. Assume mydomain.duckdns.org has been resolved to the current server
+3. Assume domain0.duckdns.org and domain1.duckdns.org has been resolved to the current server
 4. Run Vless+TCP+PLAN+gRPC service on port 55443, location /svc0
 5. Run Vless+TCP+PLAN+WebSocket service on port 53443, location /ws1
 6. Run Trojan+TCP+PLAN+WebSocket service on port 51443, location /ws2
-7. Run nginx on port 443 as a TLS front with the given cert, proxy all 3 services with 3 different locations
+7. Run nginx on port 443 as a TLS front with the given certs for 2 domains, proxy 3 services with 3 locations
 8. Only port 443 will be available for access from internet
 
 ```shell
@@ -233,7 +233,8 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 --ltpg p=55443,u=myid0,s=svc0 \
 --ltpw p=53443,u=myid1,w=/ws1 \
 --ttpw p=51443,u=myid2,w=/ws2 \
---ng-opt p=443,d=mydomain.duckdns.org \
+--ng-opt p=443,d=domain0.duckdns.org \
+--ng-opt p=443,d=domain1.duckdns.org \
 --ng-proxy p=55443,l=/svc0,n=grpc \
 --ng-proxy p=53443,l=/ws1,n=ws \
 --ng-proxy p=51443,l=/ws2,n=ws
@@ -247,9 +248,9 @@ Only PLAN (NON-TLS) services (--ltpg, --ltpw, --mtpw, -ttpw) can be proxied by N
 #### Multiple service connection verifying instructions
 
 ```shell
-$ docker run --name proxy-gsvc -p 1080:1080 -d samuelhbne/proxy-xray --lttg myid0@mydomain.duckdns.org:443:/gsvc
-$ docker run --name proxy-vless -p 2080:1080 -d samuelhbne/proxy-xray --lttw myid1@mydomain.duckdns.org:443:/ws1
-$ docker run --name proxy-trojan -p 3080:1080 -d samuelhbne/proxy-xray --tttw myid2@mydomain.duckdns.org:443:/ws2
+$ docker run --name proxy-gsvc -p 1080:1080 -d samuelhbne/proxy-xray --lttg myid0@domain0.duckdns.org:443:/gsvc
+$ docker run --name proxy-vless -p 2080:1080 -d samuelhbne/proxy-xray --lttw myid1@domain1.duckdns.org:443:/ws1
+$ docker run --name proxy-trojan -p 3080:1080 -d samuelhbne/proxy-xray --tttw myid2@domain0.duckdns.org:443:/ws2
 
 $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 12.34.56.78
