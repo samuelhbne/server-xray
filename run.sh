@@ -21,7 +21,7 @@ usage() {
 #   echo "    --ssa  <Shadowsocks-AEAD option>      [port=443,]user=password1:method1[,user=password2:method2]"
 #   echo "    --sst  <Shadowsocks-TCP option>       [port=443,]user=passwd,method=xxxx"
     echo "    --ng-opt <nginx-options>              [p=443,]d=domain.com"
-    echo "    --ng-proxy <nginx-proxy-options>      [h=127.0.0.1,]p=8443,l=location,n=ws|grpc"
+    echo "    --ng-proxy <nginx-proxy-options>      [d=domain.com,][h=127.0.0.1,]p=8443,l=location,n=ws|grpc"
     echo "    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit"
     echo "    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert"
     echo "    -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/"
@@ -61,19 +61,19 @@ while true ; do
             shift 2
             ;;
         --ng-opt)
-            NGOPT=$2
+            NGOPT+=("$2")
             shift 2
             ;;
         --ng-proxy)
             NGPROXY+=("$2")
             shift 2
             ;;
-		--)
-			shift
-			break
-			;;
+        --)
+            shift
+            break
+            ;;
         *)
-            echo "Get: $1"
+            echo "Unknown option: $1"
             usage;
             exit 1
             ;;
@@ -139,7 +139,11 @@ if [ -n "${SVCMD}" ]; then
     fi
 
     if [ -n "${NGOPT}" ]; then
-        ngcmd="${DIR}server-nginx.sh --ng-opt ${NGOPT},$xopt"
+        ngcmd="${DIR}server-nginx.sh"
+        for ngopt in "${NGOPT[@]}"
+        do
+            ngcmd="${ngcmd} --ng-opt ${ngopt},$xopt"
+        done
         for ngproxy in "${NGPROXY[@]}"
         do
             ngcmd="${ngcmd} --ng-proxy ${ngproxy}"
