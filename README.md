@@ -72,6 +72,7 @@ server-xray <server-options>
     --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com]
     --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc
+    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1...]
     -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
     -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
     -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
