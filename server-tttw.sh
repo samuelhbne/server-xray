@@ -92,9 +92,6 @@ do
     if [ -z "${uopt[1]}" ]; then
         uopt[1]=0
     fi
-    if [ -z "${uopt[2]}" ]; then
-        uopt[2]="nobody@g.cn"
-    fi
     cat $XCONF |jq --arg port "${port}" --arg pass "${uopt[0]}" --arg level "${uopt[1]}" --arg email "${uopt[2]}" \
     '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"password":$pass, "level":($level|tonumber), "email":$email} ] ' \
     |sponge $XCONF

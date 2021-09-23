@@ -22,6 +22,7 @@ usage() {
 #   echo "    --sst  <Shadowsocks-TCP option>       [port=443,]user=passwd,method=xxxx"
     echo "    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com]"
     echo "    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc"
+    echo "    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1...]"
     echo "    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit"
     echo "    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert"
     echo "    -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/"
@@ -29,7 +30,7 @@ usage() {
     echo "    -d|--debug                            [Optional] Start in debug mode with verbose output"
 }
 
-TEMP=`getopt -o k:r:c:di --long hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,ltpw:,mtt:,mttw:,mtpw:,ttt:,tttw:,ttpw:,lttg:,ltpg:,ssa:,sst:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,ltpw:,mtt:,mttw:,mtpw:,ttt:,tttw:,ttpw:,lttg:,ltpg:,ssa:,sst:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -54,6 +55,10 @@ while true ; do
         -d|--debug)
             DEBUG=1
             shift 1
+            ;;
+        -u|--user)
+            UOPT+=("$2")
+            shift 2
             ;;
         --ltx|--ltt|--lttw|--ltpw|--lttg|--ltpg|--mtt|--mttw|--mtpw|--ttt|--tttw|--ttpw)
             SVC=`echo $1|tr -d '\-\-'`
@@ -117,6 +122,10 @@ CERTPATH+=("/root/.acme.sh")
 for cp in "${CERTPATH[@]}"
 do
     xopt="$xopt,certpath=$cp"
+done
+for uopt in "${UOPT[@]}"
+do
+    xopt="$xopt,$uopt"
 done
 
 if [ -n "${SVCMD}" ]; then

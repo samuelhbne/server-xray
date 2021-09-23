@@ -74,17 +74,14 @@ do
     if [ -z "${uopt[0]}" ]; then
         echo "Incorrect user format: ${xu}"
         echo "Correct user format: user=<uid>[:level:email]"
-        echo "Like: user=myid:0:nobody@g.cn"
-        echo "Like: user=myid::nobody@g.cn"
+        echo "Like: user=myid:0:me@g.cn"
+        echo "Like: user=myid::me@g.cn"
         echo "Like: user=myid:0"
         echo "Like: user=myid"
         exit 1
     fi
     if [ -z "${uopt[1]}" ]; then
         uopt[1]=0
-    fi
-    if [ -z "${uopt[2]}" ]; then
-        uopt[2]="nobody@g.cn"
     fi
     cat $XCONF |jq --arg port "${port}" --arg uid "${uopt[0]}" --arg level "${uopt[1]}" --arg email "${uopt[2]}" \
     '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"id":$uid, "level":($level|tonumber), "email":$email} ] ' \
