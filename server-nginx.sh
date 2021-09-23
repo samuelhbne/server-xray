@@ -118,6 +118,7 @@ done
 
 for ngproxy in "${NGPROXY[@]}"
 do
+    unset xdomain
     options=(`echo $ngproxy |tr ',' ' '`)
     for option in "${options[@]}"
     do
