@@ -4,7 +4,9 @@ DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
 
 usage() {
-    echo "Usage: server-nginx --ng-opt <nginx-options> --ng-proxy <nginx-proxy-options>"
+    echo "server-nginx --ng-opt <c=certpath,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws>[,h=127.0.0.1]"
+    echo "    --ng-opt      <c=cert-path-root,d=host-domain>[,p=443]"
+    echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws>[,h=127.0.0.1][,d=host-domain]"
 }
 
 TEMP=`getopt -o o:x: --long ng-opt:,ng-proxy: -n "$0" -- $@`
@@ -33,17 +35,8 @@ while true ; do
     esac
 done
 
-if [ -z "${NGOPT}" ]; then
-    echo "Missing --ng-opt option"
-    usage;
-    exit 1
-fi
-
-if [ -z "${NGPROXY}" ]; then
-    echo "Missing --ng-proxy option"
-    usage;
-    exit 1
-fi
+if [ -z "${NGOPT}" ]; then usage; exit 1; fi
+if [ -z "${NGPROXY}" ]; then usage; exit 1; fi
 
 # Running as root to enable low port listening. Necessary for Fargate or k8s.
 sed -i 's/^user nginx;$/user root;/g' /etc/nginx/nginx.conf
@@ -74,18 +67,8 @@ do
         esac
     done
 
-    if [ -z "${certpath}" ]; then
-        echo "Error: certpath undefined."
-        usage
-        exit 1
-    fi
-
-    if [ -z "${domain}" ]; then
-        echo "Error: domain undefined."
-        usage
-        exit 1
-    fi
-
+    if [ -z "${certpath}" ]; then echo "Error: certpath undefined."; usage; exit 1; fi
+    if [ -z "${domain}" ]; then echo "Error: domain undefined."; usage; exit 1; fi
     if [ -z "${port}" ]; then port=443; fi
     if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
@@ -118,7 +101,7 @@ done
 
 for ngproxy in "${NGPROXY[@]}"
 do
-    unset xdomain
+    unset xdomain xhost xport xlocation xnetwork
     options=(`echo $ngproxy |tr ',' ' '`)
     for option in "${options[@]}"
     do
@@ -142,11 +125,16 @@ do
         esac
     done
 
+    if [ -z "${xport}" ]; then echo "Missing port: $ngproxy"; usage; exit 1; fi
+    if ! [ "${xport}" -eq "${xport}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
+    if [ -z "${xnetwork}" ]; then echo "Missing network: $ngproxy"; usage; exit 1; fi
+    if [ -z "${xlocation}" ]; then echo "Missing location: $ngproxy"; usage; exit 1; fi
     if [ -z "${xhost}" ]; then xhost="127.0.0.1"; fi
     if [ -z "${xdomain}" ]; then xdomain=("${DOMAIN[@]}"); fi
 
     for domain in "${xdomain[@]}"
     do
+        if ! [ -f "${domain}.conf" ]; then echo "Assigned domain ${domain} not found"; usage; exit 1; fi
         # Replace the last(only) single line '}' with specific tpl file, hence insert a new section into the Nginx config file
         case "${xnetwork}" in
             ws|websocket)
