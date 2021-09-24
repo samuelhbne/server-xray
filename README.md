@@ -70,8 +70,8 @@ server-xray <server-options>
     --ttt  <TROJAN-TCP-TLS option>        [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
     --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com]
-    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc
+    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com...]
+    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc
     -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1...]
     -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
     -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
@@ -223,18 +223,19 @@ The following command will:
 1. Assume to read TLS cert from /home/ubuntu/cert/domain*.duckdns.org/fullchain.cer
 2. Assume to read private key from  /home/ubuntu/cert/domain*.duckdns.org/domain*.duckdns.org.key
 3. Assume domain0.duckdns.org and domain1.duckdns.org has been resolved to the current server
-4. Run Vless+TCP+PLAN+gRPC service on port 55443, location /svc0, serve on all domains
-5. Run Vless+TCP+PLAN+WebSocket service on port 53443, location /ws1, serve on all domains
-6. Run Trojan+TCP+PLAN+WebSocket service on port 51443, location /ws2, serve only on domain1.duckdns.org
+4. Run Vless+TCP+PLAN+gRPC service on port 55443, location /svc0, serve all domains
+5. Run Vless+TCP+PLAN+WebSocket service on port 53443, location /ws1, serve all domains
+6. Run Trojan+TCP+PLAN+WebSocket service on port 51443, location /ws2, serve only domain1.duckdns.org
 7. Run nginx on port 443 as a TLS front with the given certs for 2 domains, proxy 3 services with 3 locations
 8. Only port 443 will be available for access from internet
 
 ```shell
-$ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray -c /opt/cert \
+$ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
+-c /opt/cert \
+--ng-opt p=443,d=domain0.duckdns.org,d=domain1.duckdns.org \
 --ltpg p=55443,u=myid0,s=svc0 \
 --ltpw p=53443,u=myid1,w=/ws1 \
 --ttpw p=51443,u=myid2,w=/ws2 \
---ng-opt p=443,d=domain0.duckdns.org,d=domain1.duckdns.org \
 --ng-proxy p=55443,l=/svc0,n=grpc \
 --ng-proxy p=53443,l=/ws1,n=ws \
 --ng-proxy d=domain1.duckdns.org,p=51443,l=/ws2,n=ws
@@ -263,7 +264,7 @@ $ curl -sSx socks5h://127.0.0.1:3080 http://ifconfig.co
 ...
 ```
 
-### 5. Running server-ray container in debug mode for connection issue diagnosis
+### 5. Running server-xray container in debug mode for connection issue diagnosis
 
 The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis.
 
