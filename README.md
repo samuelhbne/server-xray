@@ -70,9 +70,9 @@ server-xray <server-options>
     --ttt  <TROJAN-TCP-TLS option>        [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
     --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
     --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com...]
-    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc
-    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1...]
+    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com][...]
+    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc
+    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1][...]
     -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
     -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
     -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
@@ -301,7 +301,7 @@ Please replace "amd64" with the arch match the current box accordingly. Other su
 
 ### Cross-compile docker image for the platforms with different architecture
 
-Please refer the [official doc](https://docs.docker.com/engine/reference/commandline/buildx_install/) for docker-buildx installation
+Please refer the [official doc](https://github.com/docker/buildx) for docker-buildx installation
 
 ```shell
 docker buildx build --platform=linux/arm/v7 -t samuelhbne/server-xray:armv7 -f Dockerfile.arm .
