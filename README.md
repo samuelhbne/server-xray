@@ -1,6 +1,6 @@
 # server-xray
 
-Yet another unofficial [xray](https://github.com/XTLS/Xray-core) server container with x86 and arm/arm64 (Raspberry Pi) support.
+Yet another unofficial [xray](https://github.com/XTLS/Xray-core) server container with built in Nginx and acme.sh cert support on x86 and arm/arm64
 
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-latest/badge.svg)
 
