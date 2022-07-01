@@ -1,0 +1,32 @@
+name: Trivy-scanning
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  Trivy-Scan:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      -
+        name: Run Trivy fs vulnerability scanner
+        uses: anandg112/trivy-action@feat/add-skip-dirs-option
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
+          #severity: 'CRITICAL'
+      -
+        name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'trivy-results.sarif'
