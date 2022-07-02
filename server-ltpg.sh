@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-lttg <xconf=xray-config-file>,<port=443>,<user=xxx-xxx[:0[:a@mail.com]]>,<service=svcname>"
+    echo "Usage: server-ltpg <xconf=xray-config-file>,<port=443>,<user=xxx-xxx[:0[:a@mail.com]]>,<service=svcname>"
 }
 
 options=(`echo $1 |tr ',' ' '`)
