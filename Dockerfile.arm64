@@ -1,6 +1,7 @@
 FROM arm64v8/golang:1.17-alpine as builder
 
-ARG XRAYVER='v1.5.7'
+ARG XRAYVER='v1.6.2'
+ARG ACMEVER='2.9.0'
 
 RUN apk add --no-cache bash git build-base
 
@@ -15,8 +16,8 @@ FROM arm64v8/alpine:3.14
 COPY --from=builder /go/src/XTLS/Xray-core/xray /usr/local/bin/
 
 RUN apk update && apk add bash nginx openssl curl socat jq moreutils
-RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/2.9.0.tar.gz"|tar zxvf -
-RUN cd /root; mv acme.sh-2.9.0 .acme.sh
+RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACMEVER}.tar.gz"|tar zxvf -
+RUN cd /root; mv acme.sh-${ACMEVER} .acme.sh
 
 COPY site-ssl.conf.tpl /etc/nginx/http.d/
 COPY grpc.tpl /etc/nginx/http.d/
