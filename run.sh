@@ -103,7 +103,7 @@ if [ -n "${CERTDOMAIN}" ]; then
         while [ ! -f "/root/.acme.sh/${DOMAIN}/fullchain.cer" ] || [ ! -f "/root/.acme.sh/${DOMAIN}/${DOMAIN}.key" ]
         do
             echo "Requesting TLS cert for ${DOMAIN} ..."
-            /root/.acme.sh/acme.sh --issue --standalone -d ${DOMAIN}
+            /root/.acme.sh/acme.sh --issue --standalone -d ${DOMAIN} --debug
             ((TRY++))
             if [ "${TRY}" -ge 3 ]; then
                 echo "Requesting TLS cert for ${DOMAIN} failed. Check log please."
