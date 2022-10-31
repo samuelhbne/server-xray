@@ -1,4 +1,4 @@
-FROM arm64v8/golang:1.17-alpine as builder
+FROM arm64v8/golang:1.19-alpine as builder
 
 ARG XRAYVER='v1.6.2'
 ARG ACMEVER='2.9.0'
