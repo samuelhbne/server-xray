@@ -107,7 +107,7 @@ Port 80 must be exported for TLS domain ownership verification
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
 --ltx p=443,d=domain1.duckdns.org,u=myid,f=:8443 \
---ttt p=2443,d=domain2.duckdns.org,u=trojan_pass \
+--ttt p=8443,d=domain2.duckdns.org,u=trojan_pass \
 -k https://duckdns.org/update/domain1/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -k https://duckdns.org/update/domain2/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r domain1.duckdns.org \
