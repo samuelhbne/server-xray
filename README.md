@@ -1,6 +1,8 @@
 # server-xray
 
-Yet another unofficial [xray](https://github.com/XTLS/Xray-core) server container with built in Nginx and acme.sh cert support on x86 and arm/arm64
+[Xray](https://github.com/XTLS/Xray-core) is a low detectable VPN. server-xray is a Xray server container that runs Xray with config file generated from command line options directly hence remove the necessity of Xray config modification.
+
+Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) if you'd like to set a Xray client.
 
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-latest/badge.svg)
 
