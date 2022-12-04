@@ -41,7 +41,7 @@ $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
 --ltx myid@mydomain.duckdns.org:443
 ...
 
-$ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
 ```
 
@@ -50,8 +50,8 @@ $ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
 #### How it works
 
 - proxy-xray created a SOCKS5 proxy that tunneling traffic through your Xray server.
-- curl query was sent to ifconfig.co via the SOCKS5 proxy served by proxy-xray.
-- Like this: curl --> proxy-xray --> server-xray --> ifconfig.co website.
+- curl query was sent to checkip.amazonaws.com via the SOCKS5 proxy served by proxy-xray.
+- Like this: curl --> proxy-xray --> server-xray --> checkip.amazonaws.com website.
 - You should get the public IP address of server-xray if all go well.
 - Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) for more details.
 
@@ -123,7 +123,7 @@ $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/s
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --ltx \
 myid@mydomain.duckdns.org:443
 
-$ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
 
 $ docker exec -t proxy-xray /status.sh
@@ -139,7 +139,7 @@ Xray-URL: vless://myid@domain1.duckdns.org:443?security=xtls&type=tcp&flow=xtls-
 $ docker run --name proxy-xray2 -p 2080:1080 -d samuelhbne/proxy-xray --ttt \
 trojan_pass@domain2.duckdns.org:8443
 
-$ curl -sSx socks5h://127.0.0.1:2080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:2080 https://checkip.amazonaws.com
 12.34.56.78
 
 $ docker exec -t proxy-xray2 /status.sh
@@ -172,7 +172,7 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttw \
 myid@mydomain.duckdns.org:443:/websocket
 
-$ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
 
 $ docker exec -t proxy-xray /status.sh
@@ -208,7 +208,7 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttg \
 myid@mydomain.duckdns.org:443:gsvc
 
-$ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
 
 $ docker exec -t proxy-xray /status.sh
@@ -255,13 +255,13 @@ $ docker run --name proxy-gsvc -p 1080:1080 -d samuelhbne/proxy-xray --lttg myid
 $ docker run --name proxy-vless -p 2080:1080 -d samuelhbne/proxy-xray --lttw myid1@domain1.duckdns.org:443:/ws1
 $ docker run --name proxy-trojan -p 3080:1080 -d samuelhbne/proxy-xray --tttw myid2@domain0.duckdns.org:443:/ws2
 
-$ curl -sSx socks5h://127.0.0.1:1080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
 
-$ curl -sSx socks5h://127.0.0.1:2080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:2080 https://checkip.amazonaws.com
 12.34.56.78
 
-$ curl -sSx socks5h://127.0.0.1:3080 http://ifconfig.co
+$ curl -sSx socks5h://127.0.0.1:3080 https://checkip.amazonaws.com
 12.34.56.78
 ...
 ```
