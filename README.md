@@ -285,31 +285,19 @@ $ docker run --rm -p 80:80 -p 443:443 samuelhbne/server-xray \
 ```shell
 $ git clone https://github.com/samuelhbne/server-xray.git
 $ cd server-xray
-$ docker build -t samuelhbne/server-xray -f Dockerfile.amd64 .
+$ docker build -t samuelhbne/server-xray .
 ...
 ```
-
-### NOTE 5
-
-Please replace "amd64" with the arch match the current box accordingly. Other supported platforms:
-
-- "arm64" for arm64v8 platforms. Support AWS A1, t4g instances as well as Apple M1, Raspberry Pi4 with 64bits OS like [Ubuntu arm64](https://ubuntu.com/download/raspberry-pi) or [Debian](https://raspi.debian.net/tested-images/).
-- "arm" for arm32v7 platforms. Support most Raspberry-Pi releases (Pi2, Pi3, Pi4) with 32bits OS like [Ubuntu armhf](https://ubuntu.com/download/raspberry-pi), [Debian](https://raspi.debian.net/tested-images/) or [Raspberry Pi OS](https://www.raspberrypi.org/software/operating-systems/).
-
-### NOTE 6
-
-- arm32v6 (Pi1 and Pi-zero) users should build the docker images from source rather than run it directly, due to the known issue from upstream Alpine image. WIP.
-- arm32v5 platforms are not supported yet.
 
 ### Cross-compile docker image for the platforms with different architecture
 
 Please refer the [official doc](https://github.com/docker/buildx) for docker-buildx installation
 
 ```shell
-docker buildx build --platform=linux/arm/v7 -t samuelhbne/server-xray:armv7 -f Dockerfile.arm .
-docker buildx build --platform=linux/arm/v6 -t samuelhbne/server-xray:armv6 -f Dockerfile.arm .
-docker buildx build --platform=linux/arm64 -t samuelhbne/server-xray:arm64 -f Dockerfile.arm64 .
-docker buildx build --platform=linux/amd64 -t samuelhbne/server-xray:amd64 -f Dockerfile.amd64 .
+docker buildx build --platform=linux/arm/v7 -t samuelhbne/server-xray:armv7 .
+docker buildx build --platform=linux/arm/v6 -t samuelhbne/server-xray:armv6 .
+docker buildx build --platform=linux/arm64 -t samuelhbne/server-xray:arm64 .
+docker buildx build --platform=linux/amd64 -t samuelhbne/server-xray:amd64 .
 ```
 
 ## Credits
