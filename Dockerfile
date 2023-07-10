@@ -1,6 +1,6 @@
-FROM golang:1.19-alpine as builder
+FROM golang:1.20-alpine as builder
 
-ARG XRAYVER='v1.7.2'
+ARG XRAYVER='v1.7.5'
 
 RUN apk add --no-cache bash git build-base
 
@@ -10,13 +10,13 @@ RUN git clone https://github.com/XTLS/Xray-core.git . && \
     go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
 
-FROM alpine:3.17
+FROM alpine:3.18
 
 ARG ACMEVER='2.9.0'
 
 COPY --from=builder /go/src/XTLS/Xray-core/xray /usr/local/bin/
 
-RUN apk update && apk add bash nginx openssl curl socat jq moreutils
+RUN apk add --no-cache bash nginx openssl curl socat jq moreutils
 RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACMEVER}.tar.gz"|tar zxvf -
 RUN cd /root; mv acme.sh-${ACMEVER} .acme.sh
 
