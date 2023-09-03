@@ -294,10 +294,10 @@ $ docker build -t samuelhbne/server-xray .
 Please refer the [official doc](https://github.com/docker/buildx) for docker-buildx installation
 
 ```shell
-docker buildx build --platform=linux/arm/v7 -t samuelhbne/server-xray:armv7 .
-docker buildx build --platform=linux/arm/v6 -t samuelhbne/server-xray:armv6 .
-docker buildx build --platform=linux/arm64 -t samuelhbne/server-xray:arm64 .
-docker buildx build --platform=linux/amd64 -t samuelhbne/server-xray:amd64 .
+docker buildx build --platform=linux/arm/v7 --output type=docker -t samuelhbne/server-xray:armv7 .
+docker buildx build --platform=linux/arm/v6 --output type=docker -t samuelhbne/server-xray:armv6 .
+docker buildx build --platform=linux/arm64 --output type=docker -t samuelhbne/server-xray:arm64 .
+docker buildx build --platform=linux/amd64 --output type=docker -t samuelhbne/server-xray:amd64 .
 ```
 
 ## Credits
