@@ -84,7 +84,7 @@ do
         uopt[1]=0
     fi
     cat $XCONF |jq --arg port "${port}" --arg uid "${uopt[0]}" --arg level "${uopt[1]}" --arg email "${uopt[2]}" \
-    '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"id":$uid, "flow":"xtls-rprx-direct", "level":($level|tonumber), "email":$email} ] ' \
+    '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"id":$uid, "flow":"xtls-rprx-vision", "level":($level|tonumber), "email":$email} ] ' \
     |sponge $XCONF
 done
 
@@ -132,11 +132,11 @@ do
 done
 
 cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"tcp", "security":"xtls" } ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"tcp", "security":"tls" } ' \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"xtlsSettings":{"alpn":["http/1.1"]} } ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/1.1"]} } ' \
 |sponge $XCONF
 
 for certroot in "${certpath[@]}"
