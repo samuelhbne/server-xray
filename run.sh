@@ -109,8 +109,8 @@ if [ -n "${CERTDOMAIN}" ]; then
                 echo "Requesting TLS cert for ${DOMAIN} failed. Check log please."
                 exit 3
             fi
-            echo "Wait 10 seconds before checking cert again..."
-            sleep 10
+            echo "Wait 30 seconds before checking cert again..."
+            sleep 30
         done
     done
 fi
