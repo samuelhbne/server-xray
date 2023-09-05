@@ -18,7 +18,7 @@ COPY --from=builder /go/src/XTLS/Xray-core/xray /usr/local/bin/
 
 RUN apk add --no-cache bash nginx openssl curl socat jq moreutils
 RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACMEVER}.tar.gz"|tar zxvf -
-RUN cd /root; mv acme.sh-${ACMEVER} .acme.sh
+RUN cd /root; ln -s acme.sh-${ACMEVER} acme.sh; mkdir .acme.sh
 
 COPY site-ssl.conf.tpl /etc/nginx/http.d/
 COPY grpc.tpl /etc/nginx/http.d/

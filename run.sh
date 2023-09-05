@@ -92,8 +92,8 @@ if [ -n "${HOOKURL}" ]; then
         curl -sSL "$URL"
         echo
     done
-    echo "Wait 10s for hook updates..."
-    sleep 10
+    echo "Wait 30s for hook updates..."
+    sleep 30
 fi
 
 if [ -n "${CERTDOMAIN}" ]; then
@@ -103,7 +103,7 @@ if [ -n "${CERTDOMAIN}" ]; then
         while [ ! -f "/root/.acme.sh/${DOMAIN}/fullchain.cer" ] || [ ! -f "/root/.acme.sh/${DOMAIN}/${DOMAIN}.key" ]
         do
             echo "Requesting TLS cert for ${DOMAIN} ..."
-            /root/.acme.sh/acme.sh --issue --standalone -d ${DOMAIN} --debug
+            /root/acme.sh/acme.sh --issue --standalone -d ${DOMAIN} --debug
             ((TRY++))
             if [ "${TRY}" -ge 3 ]; then
                 echo "Requesting TLS cert for ${DOMAIN} failed. Check log please."
