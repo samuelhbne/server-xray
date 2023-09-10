@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-ltx <xconf=xray-config-file>,<certpath=cert-path-root>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
+    echo "Usage: server-ltx <xconf=xray-config-file>,<certhome=cert-home-dir>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -12,8 +12,8 @@ do
         x|xconf)
             xconf="${kv[1]}"
             ;;
-        c|certpath)
-            certpath+=("${kv[1]}")
+        c|certhome)
+            certhome="${kv[1]}"
             ;;
         p|port)
             port="${kv[1]}"
@@ -30,8 +30,8 @@ do
     esac
 done
 
-if [ -z "${certpath}" ]; then
-    echo "Error: certpath undefined."
+if [ -z "${certhome}" ]; then
+    echo "Error: certhome undefined."
     usage
     exit 1
 fi
@@ -139,14 +139,11 @@ cat $XCONF |jq --arg port "${port}" \
 '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/1.1"]} } ' \
 |sponge $XCONF
 
-for certroot in "${certpath[@]}"
-do
-    if [ -f "${certroot}/${domain}/fullchain.cer" ] && [ -f "${certroot}/${domain}/${domain}.key" ]; then
-        fullchain="${certroot}/${domain}/fullchain.cer"
-        prvkey="${certroot}/${domain}/${domain}.key"
-        break
-    fi
-done
+if [ -f "${certhome}/${domain}/fullchain.cer" ] && [ -f "${certhome}/${domain}/${domain}.key" ]; then
+    fullchain="${certhome}/${domain}/fullchain.cer"
+    prvkey="${certhome}/${domain}/${domain}.key"
+    break
+fi
 
 if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
     echo "TLS cert missing?"

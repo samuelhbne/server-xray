@@ -2,10 +2,11 @@
 
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
+TPL="site-ssl.conf.tpl"
 
 usage() {
-    echo "server-nginx --ng-opt <c=certpath,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws>[,h=127.0.0.1]"
-    echo "    --ng-opt      <c=cert-path-root,d=host-domain>[,p=443]"
+    echo "server-nginx --ng-opt <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws>[,h=127.0.0.1]"
+    echo "    --ng-opt      <c=cert-home-dir,d=host-domain>[,p=443]"
     echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws>[,h=127.0.0.1][,d=host-domain]"
 }
 
@@ -48,14 +49,14 @@ fi
 
 for ngopt in "${NGOPT[@]}"
 do
-    unset certpath
+    unset certhome
     options=(`echo $ngopt |tr ',' ' '`)
     for option in "${options[@]}"
     do
         kv=(`echo $option |tr '=' ' '`)
         case "${kv[0]}" in
-            c|certpath)
-                certpath+=("${kv[1]}")
+            c|certhome)
+                certhome="${kv[1]}"
                 ;;
             p|port)
                 port="${kv[1]}"
@@ -67,27 +68,18 @@ do
         esac
     done
 
-    if [ -z "${certpath}" ]; then echo "Error: certpath undefined."; usage; exit 1; fi
+    if [ -z "${certhome}" ]; then echo "Error: certhome undefined."; usage; exit 1; fi
     if [ -z "${domain}" ]; then echo "Error: domain undefined."; usage; exit 1; fi
     if [ -z "${port}" ]; then port=443; fi
     if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
-    for certroot in "${certpath[@]}"
-    do
-        if [ -f "${certroot}/${domain}/fullchain.cer" ] && [ -f "${certroot}/${domain}/${domain}.key" ]; then
-            fullchain="${certroot}/${domain}/fullchain.cer"
-            prvkey="${certroot}/${domain}/${domain}.key"
-            break
-        fi
-    done
-
+    fullchain="${certhome}/${domain}/fullchain.cer"
+    prvkey="${certhome}/${domain}/${domain}.key"
     if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
-        echo "TLS cert missing?"
+        echo "${domain} TLS cert missing?"
         echo "Abort."
         exit 2
     fi
-
-    TPL="site-ssl.conf.tpl"
 
     ESC_CERTFILE=$(printf '%s\n' "${fullchain}" | sed -e 's/[]\/$*.^[]/\\&/g')
     ESC_PRVKEYFILE=$(printf '%s\n' "${prvkey}" | sed -e 's/[]\/$*.^[]/\\&/g')
@@ -152,3 +144,4 @@ do
         sed -i "s/LOCATION/${ESC_LOCATION}/g" ${domain}.conf
     done
 done
+exit 0

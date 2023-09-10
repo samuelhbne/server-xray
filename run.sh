@@ -1,7 +1,10 @@
 #!/bin/bash
 
+#while :; do sleep 2073600; done
+
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
+CERTHOME="/root/.acme.sh"
 XCONF=/tmp/server-xray.json
 
 usage() {
@@ -25,12 +28,12 @@ usage() {
     echo "    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1][...]"
     echo "    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit"
     echo "    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert"
-    echo "    -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/"
+    echo "    -c|--cert-home <cert-home-dir>        [Optional] Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
     echo "    -i|--stdin                            [Optional] Read config from stdin instead of auto generation"
     echo "    -d|--debug                            [Optional] Start in debug mode with verbose output"
 }
 
-TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-path:,ltx:,ltt:,lttw:,ltpw:,mtt:,mttw:,mtpw:,ttt:,tttw:,ttpw:,lttg:,ltpg:,ssa:,sst:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,ltx:,ltt:,lttw:,ltpw:,mtt:,mttw:,mtpw:,ttt:,tttw:,ttpw:,lttg:,ltpg:,ssa:,sst:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -44,8 +47,8 @@ while true ; do
             CERTDOMAIN+=("$2")
             shift 2
             ;;        
-        -c|--cert-path)
-            CERTPATH+=("$2")
+        -c|--cert-home)
+            CERTHOME="$2"
             shift 2
             ;;
         -i|--stdin)
@@ -100,10 +103,11 @@ if [ -n "${CERTDOMAIN}" ]; then
     for DOMAIN in "${CERTDOMAIN[@]}"
     do
         TRY=0
-        while [ ! -f "/root/.acme.sh/${DOMAIN}/fullchain.cer" ] || [ ! -f "/root/.acme.sh/${DOMAIN}/${DOMAIN}.key" ]
+        while [ ! -f "/${CERTHOME}/${DOMAIN}/fullchain.cer" ] || [ ! -f "/${CERTHOME}/${DOMAIN}/${DOMAIN}.key" ]
         do
             echo "Requesting TLS cert for ${DOMAIN} ..."
-            /root/acme.sh/acme.sh --issue --standalone -d ${DOMAIN} --debug
+            echo "/root/acme.sh/acme.sh --cert-home ${CERTHOME} --issue --standalone -d ${DOMAIN} --debug"
+            /root/acme.sh/acme.sh --cert-home "${CERTHOME}" --issue --standalone -d ${DOMAIN} --debug
             ((TRY++))
             if [ "${TRY}" -ge 3 ]; then
                 echo "Requesting TLS cert for ${DOMAIN} failed. Check log please."
@@ -118,11 +122,7 @@ fi
 echo '{"log":{"loglevel":"warning"}, "inbounds":[], "outbounds":[{"protocol":"freedom"}]}' |jq .|sponge $XCONF
 
 xopt="xconf=$XCONF"
-CERTPATH+=("/root/.acme.sh")
-for cp in "${CERTPATH[@]}"
-do
-    xopt="$xopt,certpath=$cp"
-done
+xopt="$xopt,certhome=$CERTHOME"
 for uopt in "${UOPT[@]}"
 do
     xopt="$xopt,$uopt"
@@ -158,6 +158,7 @@ if [ -n "${SVCMD}" ]; then
             ngcmd="${ngcmd} --ng-proxy ${ngproxy}"
         done
         $ngcmd
+        ret=$?; if [ $ret != 0 ] ; then echo "\nNon-zero result $ret from the following cmd:\n$ngcmd"; exit $ret ; fi
         nginx;
     fi
 

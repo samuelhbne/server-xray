@@ -77,7 +77,7 @@ server-xray <server-options>
     -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1][...]
     -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
     -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
-    -c|--cert-path <cert-path-root>       [Optional] Reading TLS certs from folder <cert-path-root>/<domain-name>/
+    -c|--cert-home <cert-home-dir>        [Optional] Reading TLS certs from folder <cert-home-dir>/<domain-name>/
     -i|--stdin                            [Optional] Read config from stdin instead of auto generation
     -d|--debug                            [Optional] Start in debug mode with verbose output
 ```
