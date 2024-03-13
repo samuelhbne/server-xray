@@ -1,6 +1,6 @@
-FROM golang:1.21-alpine as builder
+FROM golang:1.22-alpine3.19 as builder
 
-ARG XRAYVER='v1.8.6'
+ARG XRAYVER='v1.8.9'
 
 RUN apk add --no-cache bash git build-base
 
@@ -10,7 +10,7 @@ RUN git clone https://github.com/XTLS/Xray-core.git . && \
     go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
 
-FROM alpine:3.18
+FROM alpine:3.19
 
 ARG ACMEVER='2.9.0'
 
