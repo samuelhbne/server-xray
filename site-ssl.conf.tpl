@@ -1,6 +1,7 @@
 server {
-    listen                  NGPORT ssl http2;
-    listen                  [::]:NGPORT ssl http2;
+    listen                  NGPORT ssl;
+    listen                  [::]:NGPORT ssl;
+    http2                   on;
     server_name             NGDOMAIN;
     ssl_certificate         CERTFILE;
     ssl_certificate_key     PRVKEYFILE;
