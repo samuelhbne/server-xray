@@ -25,15 +25,20 @@ usage() {
     echo "    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath"
     echo "    --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]"
     echo "    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc|splt"
-    echo "    -u|--user <global-user-options>   u=id0[:level[:email]][,u=id1][...]"
-    echo "    -k|--hook <hook-url>              DDNS update or notifing URL to be hit"
+    echo "    --domain-block <domain-rule>      Add a domain rule for routing block, like geosite:category-ads-all"
+    echo "    --ip-block <ip-rule>              Add a ip-addr rule for routing block, like geoip:private"
+    echo "    --cn-block                        Add routing rules to avoid domains and IPs located in China being proxied"
+    echo "    -u|--user  <global-user-options>  u=id0[:level[:email]][,u=id1][...]"
+    echo "    -k|--hook  <hook-url>             DDNS update or notifing URL to be hit"
     echo "    -r|--request-domain <domain-name> Domain name to request for letsencrypt cert"
     echo "    -c|--cert-home <cert-home-dir>    Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
     echo "    -i|--stdin                        Read config from STDIN instead of auto generation"
     echo "    -d|--debug                        Start in debug mode with verbose output"
 }
 
-TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,lx:,ls:,ms:,ts:,lsg:,lss:,lsw:,msw:,tsw:,lpg:,lps:,lpw:,mpw:,tpw:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
+Jrules='{"rules":[]}'
+
+TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,lx:,ls:,ms:,ts:,lsg:,lss:,lsw:,msw:,tsw:,lpg:,lps:,lpw:,mpw:,tpw:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -67,6 +72,25 @@ while true ; do
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}server-${SVC}.sh $2")
             shift 2
+            ;;
+        --domain-block)
+            Jrules=`echo "${Jrules}" | jq --arg blkdomain "$2" \
+            '.rules += [{"type":"field", "outboundTag":"block", "domain":[$blkdomain]}]'`
+            shift 2
+            ;;
+        --ip-block)
+            Jrules=`echo "${Jrules}" | jq --arg blkip "$2" \
+            '.rules += [{"type":"field", "outboundTag":"block", "ip":[$blkip]}]'`
+            shift 2
+            ;;
+        --cn-block)
+            Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:geolocation-cn" \
+            '.rules += [{"type":"field", "outboundTag":"block", "domain":[$igndomain]}]'`
+            Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:cn" \
+            '.rules += [{"type":"field", "outboundTag":"block", "domain":[$igndomain]}]'`
+            Jrules=`echo "${Jrules}" | jq --arg ignip "geoip:cn" \
+            '.rules += [{"type":"field", "outboundTag":"block", "ip":[$ignip]}]'`
+            shift 1
             ;;
         --ng-opt)
             NGOPT+=("$2")
@@ -127,6 +151,11 @@ for uopt in "${UOPT[@]}"
 do
     xopt="$xopt,$uopt"
 done
+
+# Add routing config
+Jrouting='{"routing": {"domainStrategy":"AsIs"}}'
+Jrouting=`echo "${Jrouting}" |jq --argjson jrules "${Jrules}" '.routing += $jrules'`
+cat $XCONF| jq --argjson jrouting "${Jrouting}" '. += $jrouting' | sponge $XCONF
 
 if [ -n "${SVCMD}" ]; then
     for svcmd in "${SVCMD[@]}"

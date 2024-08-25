@@ -9,12 +9,17 @@ RUN git clone https://github.com/XTLS/Xray-core.git . && \
     git checkout ${XRAYVER} && \
     go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
+RUN cd /tmp; wget -c -t3 -T30 https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
+RUN cd /tmp; wget -c -t3 -T30 https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
+    
 
 FROM nginx:stable-alpine3.20
 
 ARG ACMEVER='2.9.0'
 
 COPY --from=builder /go/src/XTLS/Xray-core/xray /usr/local/bin/
+COPY --from=builder /tmp/geosite.dat /usr/local/bin/
+COPY --from=builder /tmp/geoip.dat /usr/local/bin/
 
 RUN apk add --no-cache bash openssl curl socat jq moreutils libcap-setcap
 RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACMEVER}.tar.gz"|tar zxvf -
