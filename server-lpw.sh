@@ -4,6 +4,8 @@ usage() {
     echo "Usage: server-lpw <x=xray-config-file>,<p=listen-port>,<u=myid[:0[:a@mail.com]]>,<w=websocket-path>"
 }
 
+port=443
+
 options=(`echo $1 |tr ',' ' '`)
 for option in "${options[@]}"
 do
@@ -31,10 +33,6 @@ if [ -z "${xconf}" ]; then
     echo "Error: xconf undefined."
     usage
     exit 1
-fi
-
-if [ -z "${port}" ]; then
-    port=443
 fi
 
 if [ -z "${xuser}" ]; then

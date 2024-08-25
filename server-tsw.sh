@@ -145,7 +145,7 @@ cat $XCONF |jq --arg port "${port}" \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/1.1"]} } ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["h2,http/1.1"]} } ' \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" --arg wspath "${wspath}" \

@@ -4,6 +4,8 @@ usage() {
     echo "Usage: server-tpw <x=xray-config-file>,<p=listen-port>,<u=password[:level[:email]],<w=websocket-path>"
 }
 
+port=443
+
 options=(`echo $1 |tr ',' ' '`)
 for option in "${options[@]}"
 do
@@ -31,10 +33,6 @@ if [ -z "${xconf}" ]; then
     echo "Error: xconf undefined."
     usage
     exit 1
-fi
-
-if [ -z "${port}" ]; then
-    port=443
 fi
 
 if [ -z "${xuser}" ]; then
@@ -124,10 +122,6 @@ done
 
 cat $XCONF |jq --arg port "${port}" \
 '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"ws", "security":"none" } ' \
-|sponge $XCONF
-
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/1.1"]} } ' \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" --arg wspath "${wspath}" \

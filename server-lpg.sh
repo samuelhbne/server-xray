@@ -4,6 +4,8 @@ usage() {
     echo "Usage: server-lpg <x=xray-config-file>,<p=listen-port>,<u=xxx-xxx[:0[:a@mail.com]]>,<s=svcname>"
 }
 
+port=443
+
 options=(`echo $1 |tr ',' ' '`)
 for option in "${options[@]}"
 do
@@ -30,8 +32,10 @@ if [ -z "${xconf}" ]; then
     exit 1
 fi
 
-if [ -z "${port}" ]; then
-    port=443
+if [ -z "${service}" ]; then
+    echo "Error: service name undefined."
+    usage
+    exit 1
 fi
 
 if [ -z "${xuser}" ]; then
@@ -74,6 +78,10 @@ cat $XCONF |jq --arg port "${port}" \
 '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.decryption ) += "none" ' \
 |sponge $XCONF
 
+cat $XCONF |jq --arg port "${port}" \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"grpc", "security":"none" } ' \
+|sponge $XCONF
+
 cat $XCONF |jq --arg port "${port}" --arg service "${service}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"grpc", "grpcSettings":{"serviceName":$service}, "security":"none"} ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"grpcSettings":{"serviceName":$service}} ' \
 |sponge $XCONF
