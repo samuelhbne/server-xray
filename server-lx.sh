@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-mtt <xconf=xray-config-file>,<certhome=cert-home-dir>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
+    echo "Usage: server-lx <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<d=mydomain.com>,<u=xxx-xxx[:0[:a@mail.com]]>"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -63,7 +63,7 @@ if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be
 XCONF=$xconf
 # Remove existing port number if existing.
 cat $XCONF |jq --arg port "${port}" 'del( .inbounds[] | select(.port == ($port|tonumber)) )' |sponge $XCONF
-cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vmess", "settings":{"clients":[]}}]' |sponge $XCONF
+cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
 
 for xu in "${xuser[@]}"
 do
@@ -84,7 +84,7 @@ do
         uopt[1]=0
     fi
     cat $XCONF |jq --arg port "${port}" --arg uid "${uopt[0]}" --arg level "${uopt[1]}" --arg email "${uopt[2]}" \
-    '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"id":$uid, "level":($level|tonumber), "email":$email} ] ' \
+    '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.clients ) += [ {"id":$uid, "flow":"xtls-rprx-vision", "level":($level|tonumber), "email":$email} ] ' \
     |sponge $XCONF
 done
 
@@ -152,5 +152,5 @@ if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
 fi
 
 cat $XCONF |jq --arg port "${port}" --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings.tlsSettings ) += {"certificates":[{"certificateFile":$fullchain, "keyFile":$prvkey}]} ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings.xtlsSettings ) += {"certificates":[{"certificateFile":$fullchain, "keyFile":$prvkey}]} ' \
 |sponge $XCONF

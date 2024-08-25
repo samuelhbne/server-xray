@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-ltpg <xconf=xray-config-file>,<port=443>,<user=xxx-xxx[:0[:a@mail.com]]>,<service=svcname>"
+    echo "Usage: server-lsg <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<d=mydomain.com>,<u=xxx-xxx[:0[:a@mail.com]]>,<s=svcname>"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -12,8 +12,14 @@ do
         x|xconf)
             xconf="${kv[1]}"
             ;;
+        c|certhome)
+            certhome="${kv[1]}"
+            ;;
         p|port)
             port="${kv[1]}"
+            ;;
+        d|domain)
+            domain="${kv[1]}"
             ;;
         u|user)
             xuser+=("${kv[1]}")
@@ -24,6 +30,12 @@ do
     esac
 done
 
+if [ -z "${certhome}" ]; then
+    echo "Error: certhome undefined."
+    usage
+    exit 1
+fi
+
 if [ -z "${xconf}" ]; then
     echo "Error: xconf undefined."
     usage
@@ -32,6 +44,12 @@ fi
 
 if [ -z "${port}" ]; then
     port=443
+fi
+
+if [ -z "${domain}" ]; then
+    echo "Error: domain undefined."
+    usage
+    exit 1
 fi
 
 if [ -z "${xuser}" ]; then
@@ -75,5 +93,25 @@ cat $XCONF |jq --arg port "${port}" \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" --arg service "${service}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"grpc", "grpcSettings":{"serviceName":$service}, "security":"none"} ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"grpc", "grpcSettings":{"serviceName":$service}, "security":"tls"} ' \
+|sponge $XCONF
+
+cat $XCONF |jq --arg port "${port}" \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/2"]}} ' \
+|sponge $XCONF
+
+if [ -f "${certhome}/${domain}/fullchain.cer" ] && [ -f "${certhome}/${domain}/${domain}.key" ]; then
+    fullchain="${certhome}/${domain}/fullchain.cer"
+    prvkey="${certhome}/${domain}/${domain}.key"
+    break
+fi
+
+if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
+    echo "TLS cert missing?"
+    echo "Abort."
+    exit 2
+fi
+
+cat $XCONF |jq --arg port "${port}" --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings.tlsSettings ) += {"certificates":[{"certificateFile":$fullchain, "keyFile":$prvkey}]} ' \
 |sponge $XCONF

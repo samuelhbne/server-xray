@@ -5,9 +5,9 @@ DIR="$(cd $DIR; pwd)"
 TPL="site-ssl.conf.tpl"
 
 usage() {
-    echo "server-nginx --ng-opt <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws>[,h=127.0.0.1]"
+    echo "server-nginx --ng-opt <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
     echo "    --ng-opt      <c=cert-home-dir,d=host-domain>[,p=443]"
-    echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws>[,h=127.0.0.1][,d=host-domain]"
+    echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws|splt>[,h=127.0.0.1][,d=host-domain]"
 }
 
 TEMP=`getopt -o o:x: --long ng-opt:,ng-proxy: -n "$0" -- $@`
@@ -130,10 +130,13 @@ do
         # Replace the last(only) single line '}' with specific tpl file, hence insert a new section into the Nginx config file
         case "${xnetwork}" in
             ws|websocket)
-                sed -i -e "/^\}$/r ws.tpl" -e "/^\}$/d" ${domain}.conf
+                sed -i -e "/^\}$/r nginx-ws.tpl" -e "/^\}$/d" ${domain}.conf
                 ;;
             grpc)
-                sed -i -e "/^\}$/r grpc.tpl" -e "/^\}$/d" ${domain}.conf
+                sed -i -e "/^\}$/r nginx-grpc.tpl" -e "/^\}$/d" ${domain}.conf
+                ;;
+            splt|proxy)
+                sed -i -e "/^\}$/r nginx-proxy.tpl" -e "/^\}$/d" ${domain}.conf
                 ;;
         esac
         # Then add '}' to the end of the Nginx config file

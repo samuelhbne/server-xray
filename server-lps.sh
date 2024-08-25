@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-mtpw <xconf=xray-config-file>,<port=443>,<user=myid[:0[:a@mail.com]]>,<path=websocket-path>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
+    echo "Usage: server-lps <x=xray-config-file>,<p=listen-port>,<u=myid[:0[:a@mail.com]]>,<w=web-path>"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -19,7 +19,7 @@ do
             xuser+=("${kv[1]}")
             ;;
         w|wpath)
-            wspath="${kv[1]}"
+            webpath="${kv[1]}"
             ;;
         f|fallback)
             fallback+=("${kv[1]}")
@@ -43,8 +43,8 @@ if [ -z "${xuser}" ]; then
     exit 1
 fi
 
-if [ -z "${wspath}" ]; then
-    echo "Error: wspath undefined."
+if [ -z "${webpath}" ]; then
+    echo "Error: webpath undefined."
     usage
     exit 1
 fi
@@ -54,7 +54,7 @@ if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be
 XCONF=$xconf
 # Remove existing port number if existing.
 cat $XCONF |jq --arg port "${port}" 'del( .inbounds[] | select(.port == ($port|tonumber)) )' |sponge $XCONF
-cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vmess", "settings":{"clients":[]}}]' |sponge $XCONF
+cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
 
 for xu in "${xuser[@]}"
 do
@@ -123,9 +123,9 @@ do
 done
 
 cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"ws", "security":"none" } ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"splithttp", "security":"none" } ' \
 |sponge $XCONF
 
-cat $XCONF |jq --arg port "${port}" --arg wspath "${wspath}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"wsSettings":{"path":$wspath}} ' \
+cat $XCONF |jq --arg port "${port}" --arg webpath "${webpath}" \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"splithttpSettings":{"path":$webpath}} ' \
 |sponge $XCONF

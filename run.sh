@@ -10,19 +10,19 @@ XCONF=/tmp/server-xray.json
 usage() {
     echo "server-xray <server-options>"
     echo "    --lx  <VLESS-XTLS option>         [p=443,]d=domain.com,u=id[:level[:email]]"
-    echo "    --lt  <VLESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
-    echo "    --ltw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath"
-    echo "    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email],]w=/wspath"
-    echo "    --ltg <VLESS-TLS-GRPC option>     [p=443,]d=domain.com,u=id[:level[:email]],s=svcname"
+    echo "    --ls  <VLESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
+    echo "    --ms  <VMESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
+    echo "    --ts  <TROJAN-TLS option>         [p=443,]d=domain.com,u=psw[:level[:email]]"
+    echo "    --lsw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath"
+    echo "    --lsg <VLESS-TLS-GRPC option>     [p=443,]d=domain.com,u=id[:level[:email]],s=svcname"
+    echo "    --lss <VLESS-TLS-SPLT option>     [p=442,]d=domain.com,u=id[:level[:email]],w=/webpath"
+    echo "    --msw <VMESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath"
+    echo "    --tsw <TROJAN-TLS-WS option>      [p=443,]d=domain.com,u=psw[:level[:email]],w=/wspath"
+    echo "    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath"
     echo "    --lpg <VLESS-PLN-GRPC option>     [p=443,]u=id[:level[:email]],s=svcname"
-    echo "    --lts <VLESS-TLS-SPLT option>     [p=442,]d=domain.com,u=id[:level[:email]],p=/path"
-    echo "    --lps <VLESS-PLN-SPLT option>     [p=442,]u=id[:level[:email],]p=/path"
-    echo "    --mt  <VMESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
-    echo "    --mtw <VMESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/webpath"
-    echo "    --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/webpath"
-    echo "    --tt  <TROJAN-TLS option>         [p=443,]d=domain.com,u=psw[:level[:email]]"
-    echo "    --ttw <TROJAN-TLS-WS option>      [p=443,]d=domain.com,u=psw[:level[:email]],w=/webpath"
-    echo "    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/webpath"
+    echo "    --lps <VLESS-PLN-SPLT option>     [p=442,]u=id[:level[:email]],w=/webpath"
+    echo "    --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath"
+    echo "    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath"
     echo "    --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]"
     echo "    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc|splt"
     echo "    -u|--user <global-user-options>   u=id0[:level[:email]][,u=id1][...]"
@@ -33,7 +33,7 @@ usage() {
     echo "    -d|--debug                        [Optional] Start in debug mode with verbose output"
 }
 
-TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,lx:,lt:,ltw:,lpw:,mt:,mtw:,mpw:,tt:,ttw:,tpw:,ltg:,lpg:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,lx:,ls:,ms:,ts:,lsw:,lsg:,lss:,msw:,tsw:,lpw:,lpg:,lps:,mpw:,tpw:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -63,7 +63,7 @@ while true ; do
             UOPT+=("$2")
             shift 2
             ;;
-        --lx|--lt|--ltw|--lpw|--ltg|--lpg|--mt|--mtw|--mpw|--tt|--ttw|--tpw)
+        --lx|--ls|--ms|--ts|--lsw|--lsg|--lss|--msw|--tsw|--lpw|--lpg|--lps|--mpw|--tpw)
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}server-${SVC}.sh $2")
             shift 2

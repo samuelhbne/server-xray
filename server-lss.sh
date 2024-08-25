@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: server-lttw <xconf=xray-config-file>,<certhome=cert-home-dir>,<port=443>,<domain=mydomain.com>,<user=xxx-xxx[:0[:a@mail.com]]>,<path=websocket-path>[,fallback=www.baidu.com:443:/html][,fallback=:2443:/websocket2]"
+    echo "Usage: server-lss <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<d=mydomain.com>,<u=xxx-xxx[:0[:a@mail.com]]>,<w=web-path>"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -25,7 +25,7 @@ do
             xuser+=("${kv[1]}")
             ;;
         w|wpath)
-            wspath="${kv[1]}"
+            webpath="${kv[1]}"
             ;;
         f|fallback)
             fallback+=("${kv[1]}")
@@ -61,8 +61,8 @@ if [ -z "${xuser}" ]; then
     exit 1
 fi
 
-if [ -z "${wspath}" ]; then
-    echo "Error: wspath undefined."
+if [ -z "${webpath}" ]; then
+    echo "Error: webpath undefined."
     usage
     exit 1
 fi
@@ -141,15 +141,15 @@ do
 done
 
 cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"ws", "security":"tls"} ' \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"splithttp", "security":"tls"} ' \
 |sponge $XCONF
 
 cat $XCONF |jq --arg port "${port}" \
 '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{"alpn":["http/1.1"]}} ' \
 |sponge $XCONF
 
-cat $XCONF |jq --arg port "${port}" --arg wspath "${wspath}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"wsSettings":{"path":$wspath}} ' \
+cat $XCONF |jq --arg port "${port}" --arg webpath "${webpath}" \
+'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"splithttpSettings":{"path":$webpath}} ' \
 |sponge $XCONF
 
 if [ -f "${certhome}/${domain}/fullchain.cer" ] && [ -f "${certhome}/${domain}/${domain}.key" ]; then
