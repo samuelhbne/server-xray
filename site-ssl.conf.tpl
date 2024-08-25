@@ -1,5 +1,5 @@
 server {
-    listen                  NGPORT quic reuseport;
+    listen                  NGPORT quic;
     listen                  NGPORT ssl;
     listen                  [::]:NGPORT ssl;
     http2                   on;
