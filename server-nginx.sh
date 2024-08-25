@@ -40,10 +40,10 @@ if [ -z "${NGOPT}" ]; then usage; exit 1; fi
 if [ -z "${NGPROXY}" ]; then usage; exit 1; fi
 
 # Running as root to enable low port listening. Necessary for Fargate or k8s.
-sed -i 's/^user nginx;$/user root;/g' /etc/nginx/nginx.conf
+# sed -i 's/^user nginx;$/user root;/g' /etc/nginx/nginx.conf
 mkdir -p /run/nginx/
-cd /etc/nginx/http.d/
-if [ -f /etc/nginx/http.d/default.conf ]; then
+cd /etc/nginx/conf.d/
+if [ -f /etc/nginx/conf.d/default.conf ]; then
     mv default.conf default.conf.disable
 fi
 
@@ -117,12 +117,12 @@ do
         esac
     done
 
-    if [ -z "${xport}" ]; then echo "Missing port: $ngproxy"; usage; exit 1; fi
-    if ! [ "${xport}" -eq "${xport}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
-    if [ -z "${xnetwork}" ]; then echo "Missing network: $ngproxy"; usage; exit 1; fi
-    if [ -z "${xlocation}" ]; then echo "Missing location: $ngproxy"; usage; exit 1; fi
     if [ -z "${xhost}" ]; then xhost="127.0.0.1"; fi
     if [ -z "${xdomain}" ]; then xdomain=("${DOMAIN[@]}"); fi
+    if [ -z "${xnetwork}" ]; then echo "Missing network: $ngproxy"; usage; exit 1; fi
+    if [ -z "${xlocation}" ]; then echo "Missing location: $ngproxy"; usage; exit 1; fi
+    if [ -z "${xport}" ]; then echo "Missing port: $ngproxy"; usage; exit 1; fi
+    if ! [ "${xport}" -eq "${xport}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
     for domain in "${xdomain[@]}"
     do
