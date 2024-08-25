@@ -64,14 +64,14 @@ server-xray <server-options>
     --ls  <VLESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]
     --ms  <VMESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]
     --ts  <TROJAN-TLS option>         [p=443,]d=domain.com,u=psw[:level[:email]]
-    --lsw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath
     --lsg <VLESS-TLS-GRPC option>     [p=443,]d=domain.com,u=id[:level[:email]],s=svcname
     --lss <VLESS-TLS-SPLT option>     [p=443,]d=domain.com,u=id[:level[:email]],w=/webpath
+    --lsw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath
     --msw <VMESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath
     --tsw <TROJAN-TLS-WS option>      [p=443,]d=domain.com,u=psw[:level[:email]],w=/wspath
-    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath
     --lpg <VLESS-PLN-GRPC option>     [p=443,]u=id[:level[:email]],s=svcname
     --lps <VLESS-PLN-SPLT option>     [p=443,]u=id[:level[:email]],w=/webpath
+    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath
     --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath
     --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath
     --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]
