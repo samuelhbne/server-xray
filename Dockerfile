@@ -10,13 +10,13 @@ RUN git clone https://github.com/XTLS/Xray-core.git . && \
     go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
 
-FROM alpine:3.20
+FROM nginx:stable-alpine3.20
 
 ARG ACMEVER='2.9.0'
 
 COPY --from=builder /go/src/XTLS/Xray-core/xray /usr/local/bin/
 
-RUN apk add --no-cache bash nginx openssl curl socat jq moreutils
+RUN apk add --no-cache bash openssl curl socat jq moreutils
 RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACMEVER}.tar.gz"|tar zxvf -
 RUN cd /root; ln -s acme.sh-${ACMEVER} acme.sh; mkdir .acme.sh
 

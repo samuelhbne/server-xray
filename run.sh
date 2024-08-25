@@ -9,31 +9,31 @@ XCONF=/tmp/server-xray.json
 
 usage() {
     echo "server-xray <server-options>"
-    echo "    --ltx  <VLESS-TCP-XTLS option>        [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --ltt  <VLESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --lttw <VLESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --ltpw <VLESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --lttg <VLESS-TCP-TLS-GRPC option>    [p=443,]d=domain.com,u=id[:level[:email]],s=svcname"
-    echo "    --ltpg <VLESS-TCP-PLAIN-GRPC option>  [p=443,]u=id[:level[:email]],s=svcname"
-    echo "    --mtt  <VMESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --mttw <VMESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --mtpw <VMESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --ttt  <TROJAN-TCP-TLS option>        [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]"
-    echo "    --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-    echo "    --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath"
-#   echo "    --ssa  <Shadowsocks-AEAD option>      [port=443,]user=password1:method1[,user=password2:method2]"
-#   echo "    --sst  <Shadowsocks-TCP option>       [port=443,]user=passwd,method=xxxx"
-    echo "    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com][...]"
-    echo "    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc"
-    echo "    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1][...]"
-    echo "    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit"
-    echo "    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert"
-    echo "    -c|--cert-home <cert-home-dir>        [Optional] Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
-    echo "    -i|--stdin                            [Optional] Read config from stdin instead of auto generation"
-    echo "    -d|--debug                            [Optional] Start in debug mode with verbose output"
+    echo "    --lx  <VLESS-XTLS option>         [p=443,]d=domain.com,u=id[:level[:email]]"
+    echo "    --lt  <VLESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
+    echo "    --ltw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath"
+    echo "    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email],]w=/wspath"
+    echo "    --ltg <VLESS-TLS-GRPC option>     [p=443,]d=domain.com,u=id[:level[:email]],s=svcname"
+    echo "    --lpg <VLESS-PLN-GRPC option>     [p=443,]u=id[:level[:email]],s=svcname"
+    echo "    --lts <VLESS-TLS-SPLT option>     [p=442,]d=domain.com,u=id[:level[:email]],p=/path"
+    echo "    --lps <VLESS-PLN-SPLT option>     [p=442,]u=id[:level[:email],]p=/path"
+    echo "    --mt  <VMESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
+    echo "    --mtw <VMESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/webpath"
+    echo "    --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/webpath"
+    echo "    --tt  <TROJAN-TLS option>         [p=443,]d=domain.com,u=psw[:level[:email]]"
+    echo "    --ttw <TROJAN-TLS-WS option>      [p=443,]d=domain.com,u=psw[:level[:email]],w=/webpath"
+    echo "    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/webpath"
+    echo "    --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]"
+    echo "    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc|splt"
+    echo "    -u|--user <global-user-options>   u=id0[:level[:email]][,u=id1][...]"
+    echo "    -k|--hook <hook-url>              [Optional] DDNS update or notifing URL to be hit"
+    echo "    -r|--request-domain <domain-name> [Optional] Domain name to request for letsencrypt cert"
+    echo "    -c|--cert-home <cert-home-dir>    [Optional] Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
+    echo "    -i|--stdin                        [Optional] Read config from STDIN instead of auto generation"
+    echo "    -d|--debug                        [Optional] Start in debug mode with verbose output"
 }
 
-TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,ltx:,ltt:,lttw:,ltpw:,mtt:,mttw:,mtpw:,ttt:,tttw:,ttpw:,lttg:,ltpg:,ssa:,sst:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,lx:,lt:,ltw:,lpw:,mt:,mtw:,mpw:,tt:,ttw:,tpw:,ltg:,lpg:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -63,7 +63,7 @@ while true ; do
             UOPT+=("$2")
             shift 2
             ;;
-        --ltx|--ltt|--lttw|--ltpw|--lttg|--ltpg|--mtt|--mttw|--mtpw|--ttt|--tttw|--ttpw)
+        --lx|--lt|--ltw|--lpw|--ltg|--lpg|--mt|--mtw|--mpw|--tt|--ttw|--tpw)
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}server-${SVC}.sh $2")
             shift 2
