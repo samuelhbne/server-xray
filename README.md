@@ -16,7 +16,7 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
---ltx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
+--lx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r mydomain.duckdns.org
 ...
@@ -38,7 +38,7 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
---ltx myid@mydomain.duckdns.org:443
+--lx myid@mydomain.duckdns.org:443
 ...
 
 $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
@@ -60,26 +60,28 @@ $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 ```shell
 $ docker run --rm samuelhbne/server-xray
 server-xray <server-options>
-    --ltx  <VLESS-TCP-XTLS option>        [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --ltt  <VLESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --lttw <VLESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ltpw <VLESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --lttg <VLESS-TCP-TLS-GRPC option>    [p=443,]d=domain.com,u=id[:level[:email]],s=svcname
-    --ltpg <VLESS-TCP-PLAIN-GRPC option>  [p=443,]u=id[:level[:email]],s=svcname
-    --mtt  <VMESS-TCP-TLS option>         [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --mttw <VMESS-TCP-TLS-WS option>      [p=443,]d=domain.com,u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --mtpw <VMESS-TCP-PLAIN-WS option>    [p=443,]u=id[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ttt  <TROJAN-TCP-TLS option>        [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]]
-    --tttw <TROJAN-TCP-TLS-WS option>     [p=443,]d=domain.com,u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ttpw <TROJAN-TCP-PLAIN-WS option>   [p=443,]u=psw[:level[:email]][,f=[fb-host]:fb-port:[fb-path]],w=/webpath
-    --ng-opt <nginx-options>              [p=443,]d=domain0.com[,d=domain1.com][...]
-    --ng-proxy <nginx-proxy-options>      [d=domain0.com,][d=domain1.com][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc
-    -u|--user <global-user-options>       u=id0[:level[:email]][,u=id1][...]
-    -k|--hook <hook-url>                  [Optional] DDNS update or notifing URL to be hit
-    -r|--request-domain <domain-name>     [Optional] Domain name to request for letsencrypt cert
-    -c|--cert-home <cert-home-dir>        [Optional] Reading TLS certs from folder <cert-home-dir>/<domain-name>/
-    -i|--stdin                            [Optional] Read config from stdin instead of auto generation
-    -d|--debug                            [Optional] Start in debug mode with verbose output
+    --lx  <VLESS-XTLS option>         [p=443,]d=domain.com,u=id[:level[:email]]
+    --ls  <VLESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]
+    --ms  <VMESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]
+    --ts  <TROJAN-TLS option>         [p=443,]d=domain.com,u=psw[:level[:email]]
+    --lsw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath
+    --lsg <VLESS-TLS-GRPC option>     [p=443,]d=domain.com,u=id[:level[:email]],s=svcname
+    --lss <VLESS-TLS-SPLT option>     [p=443,]d=domain.com,u=id[:level[:email]],w=/webpath
+    --msw <VMESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath
+    --tsw <TROJAN-TLS-WS option>      [p=443,]d=domain.com,u=psw[:level[:email]],w=/wspath
+    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath
+    --lpg <VLESS-PLN-GRPC option>     [p=443,]u=id[:level[:email]],s=svcname
+    --lps <VLESS-PLN-SPLT option>     [p=443,]u=id[:level[:email]],w=/webpath
+    --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath
+    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath
+    --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]
+    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc|splt
+    -u|--user <global-user-options>   u=id0[:level[:email]][,u=id1][...]
+    -k|--hook <hook-url>              DDNS update or notifing URL to be hit
+    -r|--request-domain <domain-name> Domain name to request for letsencrypt cert
+    -c|--cert-home <cert-home-dir>    Reading TLS certs from folder <cert-home-dir>/<domain-name>/
+    -i|--stdin                        Read config from STDIN instead of auto generation
+    -d|--debug                        Start in debug mode with verbose output
 ```
 
 ## How to stop and remove the running container
@@ -108,8 +110,8 @@ Port 80 must be exported for TLS domain ownership verification
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
---ltx p=443,d=domain1.duckdns.org,u=myid,f=:8443 \
---ttt p=8443,d=domain2.duckdns.org,u=trojan_pass \
+--lx p=443,d=domain1.duckdns.org,u=myid,f=:8443 \
+--ts p=8443,d=domain2.duckdns.org,u=trojan_pass \
 -k https://duckdns.org/update/domain1/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -k https://duckdns.org/update/domain2/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r domain1.duckdns.org \
@@ -136,13 +138,13 @@ Xray-URL: vless://myid@domain1.duckdns.org:443?security=xtls&type=tcp&flow=xtls-
 #### Trojan connection verifying instructions
 
 ```shell
-$ docker run --name proxy-xray2 -p 2080:1080 -d samuelhbne/proxy-xray --ttt \
+$ docker run --name proxy-xray -p 2080:1080 -d samuelhbne/proxy-xray --ts \
 trojan_pass@domain2.duckdns.org:8443
 
 $ curl -sSx socks5h://127.0.0.1:2080 https://checkip.amazonaws.com
 12.34.56.78
 
-$ docker exec -t proxy-xray2 /status.sh
+$ docker exec -t proxy-xray /status.sh
 VPS-Server: mydomain.duckdns.org
 Xray-URL: trojan://trojan_pass@domain2.duckdns.org:8443#domain2.duckdns.org:8443
 [QR-Code]
@@ -161,7 +163,7 @@ The following command will:
 
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
---lttw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
+--lsw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
 -c /opt/cert
 ...
 ```
@@ -169,7 +171,7 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 #### Websocket connection verifying instructions
 
 ```shell
-$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttw \
+$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lsw \
 myid@mydomain.duckdns.org:443:/websocket
 
 $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
@@ -196,7 +198,7 @@ The following command will:
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
 -c /opt/cert --ng-opt port=443,domain=mydomain.duckdns.org \
---ltpg port=65443,user=myid,service=gsvc \
+--lpg port=65443,user=myid,service=gsvc \
 --ng-proxy port=65443,location=/gsvc,network=grpc
 
 ...
@@ -205,7 +207,7 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 #### gRPC connection verifying instructions
 
 ```shell
-$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lttg \
+$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray --lsg \
 myid@mydomain.duckdns.org:443:gsvc
 
 $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
@@ -235,9 +237,9 @@ The following command will:
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
 -c /opt/cert \
 --ng-opt p=443,d=domain0.duckdns.org,d=domain1.duckdns.org \
---ltpg p=55443,u=myid0,s=svc0 \
---ltpw p=53443,u=myid1,w=/ws1 \
---ttpw p=51443,u=myid2,w=/ws2 \
+--lpg p=55443,u=myid0,s=svc0 \
+--lpw p=53443,u=myid1,w=/ws1 \
+--tpw p=51443,u=myid2,w=/ws2 \
 --ng-proxy p=55443,l=/svc0,n=grpc \
 --ng-proxy p=53443,l=/ws1,n=ws \
 --ng-proxy d=domain1.duckdns.org,p=51443,l=/ws2,n=ws
@@ -246,14 +248,14 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 
 ### NOTE 4
 
-Only PLAN (NON-TLS) services (--ltpg, --ltpw, --mtpw, -ttpw) can be proxied by Nginx.
+Only PLAN (NON-TLS) services (--lpg, --lpw, --mpw, -tpw) can be proxied by Nginx.
 
 #### Multiple service connection verifying instructions
 
 ```shell
-$ docker run --name proxy-gsvc -p 1080:1080 -d samuelhbne/proxy-xray --lttg myid0@domain0.duckdns.org:443:/gsvc
-$ docker run --name proxy-vless -p 2080:1080 -d samuelhbne/proxy-xray --lttw myid1@domain1.duckdns.org:443:/ws1
-$ docker run --name proxy-trojan -p 3080:1080 -d samuelhbne/proxy-xray --tttw myid2@domain0.duckdns.org:443:/ws2
+$ docker run --name proxy-gsvc -p 1080:1080 -d samuelhbne/proxy-xray --lsg myid0@domain0.duckdns.org:443:/gsvc
+$ docker run --name proxy-vless -p 2080:1080 -d samuelhbne/proxy-xray --lsw myid1@domain1.duckdns.org:443:/ws1
+$ docker run --name proxy-trojan -p 3080:1080 -d samuelhbne/proxy-xray --tsw myid2@domain0.duckdns.org:443:/ws2
 
 $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
@@ -273,7 +275,7 @@ The following instruction start server-trojan in debug mode. Output Xray config 
 ```shell
 $ docker run --rm -p 80:80 -p 443:443 samuelhbne/server-xray \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
---mttw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
+--msw d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
 -r mydomain.duckdns.org --debug
 ...
 ```
