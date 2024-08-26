@@ -5,6 +5,7 @@
 Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) if you'd like to set a Xray client.
 
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-latest/badge.svg)
+![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-dev/badge.svg)
 
 ## How to start the container
 
