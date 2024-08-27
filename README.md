@@ -76,9 +76,12 @@ server-xray <server-options>
     --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath
     --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath
     --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]
-    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc|splt
-    -u|--user <global-user-options>   u=id0[:level[:email]][,u=id1][...]
-    -k|--hook <hook-url>              DDNS update or notifing URL to be hit
+    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,]p=port-backend,l=location,n=ws|grpc|splt
+    --domain-block <domain-rule>      Add a domain rule for routing block, like geosite:category-ads-all
+    --ip-block <ip-rule>              Add a ip-addr rule for routing block, like geoip:private
+    --cn-block                        Add routing rules to avoid domains and IPs located in China being proxied
+    -u|--user  <global-user-options>  u=id0[:level[:email]][,u=id1][...]
+    -k|--hook  <hook-url>             DDNS update or notifing URL to be hit
     -r|--request-domain <domain-name> Domain name to request for letsencrypt cert
     -c|--cert-home <cert-home-dir>    Reading TLS certs from folder <cert-home-dir>/<domain-name>/
     -i|--stdin                        Read config from STDIN instead of auto generation

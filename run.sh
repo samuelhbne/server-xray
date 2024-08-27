@@ -24,7 +24,7 @@ usage() {
     echo "    --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath"
     echo "    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath"
     echo "    --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]"
-    echo "    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,][...][h=127.0.0.1,]p=port-backend,l=location,n=ws|grpc|splt"
+    echo "    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,]p=port-backend,l=location,n=ws|grpc|splt"
     echo "    --domain-block <domain-rule>      Add a domain rule for routing block, like geosite:category-ads-all"
     echo "    --ip-block <ip-rule>              Add a ip-addr rule for routing block, like geoip:private"
     echo "    --cn-block                        Add routing rules to avoid domains and IPs located in China being proxied"
