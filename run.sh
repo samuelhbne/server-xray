@@ -33,12 +33,13 @@ usage() {
     echo "    -r|--request-domain <domain-name> Domain name to request for letsencrypt cert"
     echo "    -c|--cert-home <cert-home-dir>    Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
     echo "    -i|--stdin                        Read config from STDIN instead of auto generation"
+    echo "    -j|--json                         Extra json snippet needs to merge into config"
     echo "    -d|--debug                        Start in debug mode with verbose output"
 }
 
 Jrules='{"rules":[]}'
 
-TEMP=`getopt -o u:k:r:c:di --long user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,lx:,ls:,ms:,ts:,lsg:,lss:,lsw:,msw:,tsw:,lpg:,lps:,lpw:,mpw:,tpw:,ng-opt:,ng-proxy:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:j:di --long user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,lx:,ls:,ms:,ts:,lsg:,lss:,lsw:,msw:,tsw:,lpg:,lps:,lpw:,mpw:,tpw:,ng-opt:,ng-proxy:,json:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -66,6 +67,10 @@ while true ; do
             ;;
         -u|--user)
             UOPT+=("$2")
+            shift 2
+            ;;
+        -j|--json)
+            INJECT+=("$2")
             shift 2
             ;;
         --lx|--ls|--ms|--ts|--lsg|--lss|--lsw|--msw|--tsw|--lpg|--lps|--lpw|--mpw|--tpw)
@@ -144,6 +149,18 @@ if [ -n "${CERTDOMAIN}" ]; then
 fi
 
 echo '{"log":{"loglevel":"warning"}, "inbounds":[], "outbounds":[{"protocol":"freedom"}]}' |jq .|sponge $XCONF
+
+if [ -n "${INJECT}" ]; then
+    for JSON_IN in "${INJECT[@]}"
+    do
+        echo "${JSON_IN}"|jq -ec >/tmp/merge.json
+        if [[ $? -ne 0 ]]; then
+            echo "Invalid json ${JSON_IN}"
+            exit 1
+        fi
+        jq -s '.[0] * .[1]' $XCONF /tmp/merge.json |sponge $XCONF
+    done
+fi
 
 xopt="xconf=$XCONF"
 xopt="$xopt,certhome=$CERTHOME"
