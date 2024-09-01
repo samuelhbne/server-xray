@@ -103,7 +103,6 @@ cat $XCONF |jq --arg port "${port}" \
 if [ -f "${certhome}/${domain}/fullchain.cer" ] && [ -f "${certhome}/${domain}/${domain}.key" ]; then
     fullchain="${certhome}/${domain}/fullchain.cer"
     prvkey="${certhome}/${domain}/${domain}.key"
-    break
 fi
 
 if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
