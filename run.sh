@@ -9,37 +9,38 @@ XCONF=/tmp/server-xray.json
 
 usage() {
     echo "server-xray <server-options>"
-    echo "    --lx  <VLESS-XTLS option>         [p=443,]d=domain.com,u=id[:level[:email]]"
-    echo "    --ls  <VLESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
-    echo "    --ms  <VMESS-TLS option>          [p=443,]d=domain.com,u=id[:level[:email]]"
-    echo "    --ts  <TROJAN-TLS option>         [p=443,]d=domain.com,u=psw[:level[:email]]"
-    echo "    --lsg <VLESS-TLS-GRPC option>     [p=443,]d=domain.com,u=id[:level[:email]],s=svcname"
-    echo "    --lss <VLESS-TLS-SPLT option>     [p=443,]d=domain.com,u=id[:level[:email]],w=/webpath"
-    echo "    --lsw <VLESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath"
-    echo "    --msw <VMESS-TLS-WS option>       [p=443,]d=domain.com,u=id[:level[:email]],w=/wspath"
-    echo "    --tsw <TROJAN-TLS-WS option>      [p=443,]d=domain.com,u=psw[:level[:email]],w=/wspath"
-    echo "    --lpg <VLESS-PLN-GRPC option>     [p=443,]u=id[:level[:email]],s=svcname"
-    echo "    --lps <VLESS-PLN-SPLT option>     [p=443,]u=id[:level[:email]],w=/webpath"
-    echo "    --lpw <VLESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath"
-    echo "    --mpw <VMESS-PLN-WS option>       [p=443,]u=id[:level[:email]],w=/wspath"
-    echo "    --tpw <TROJAN-PLN-WS option>      [p=443,]u=psw[:level[:email]],w=/wspath"
-    echo "    --ng-opt <nginx-options>          [p=443,]d=domain0.com[,d=domain1.com][...]"
-    echo "    --ng-proxy <nginx-proxy-options>  [d=domain0.com,][d=domain1.com,]p=port-backend,l=location,n=ws|grpc|splt"
-    echo "    --domain-block <domain-rule>      Add a domain rule for routing block, like geosite:category-ads-all"
-    echo "    --ip-block <ip-rule>              Add a ip-addr rule for routing block, like geoip:private"
-    echo "    --cn-block                        Add routing rules to avoid domains and IPs located in China being proxied"
-    echo "    -u|--user  <global-user-options>  u=id0[:level[:email]][,u=id1][...]"
-    echo "    -k|--hook  <hook-url>             DDNS update or notifing URL to be hit"
-    echo "    -r|--request-domain <domain-name> Domain name to request for letsencrypt cert"
-    echo "    -c|--cert-home <cert-home-dir>    Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
-    echo "    -i|--stdin                        Read config from STDIN instead of auto generation"
-    echo "    -j|--json                         '{"log":{"loglevel":"info"}' Json snippet to merge into the config"
-    echo "    -d|--debug                        Start in debug mode with verbose output"
+    echo "    --lgp     <VLESS-GRPC-PLN option>     p=11443,u=id1,u=id2...,s=svcname"
+    echo "    --lgr     <VLESS-GRPC-RLTY option>    p=12443,u=id1,u=id2...,s=svcname,d=dest.com,pub=xxx,prv=yyy"
+    echo "    --lgt     <VLESS-GRPC-TLS option>     p=13443,u=id1,u=id2...,s=svcname,d=domain.com"
+    echo "    --lsp     <VLESS-SPLT-PLN option>     p=14443,u=id1,u=id2...,w=/webpath"
+    echo "    --lst     <VLESS-SPLT-TLS option>     p=16443,u=id1,u=id2...,w=/webpath,d=domain.com"
+    echo "    --ltr     <VLESS-TCP-RLTY option>     p=17443,u=id1,u=id2...,[xtls],d=dest.com,pub=xxx,prv=yyy"
+    echo "    --ltt     <VLESS-TCP-TLS option>      p=18443,u=id1,u=id2...,[xtls],d=domain.com"
+    echo "    --lwp     <VLESS-WS-PLN option>       p=19443,u=id1,u=id2...,w=/wskpath"
+    echo "    --lwt     <VLESS-WS-TLS option>       p=22443,u=id1,u=id2...,w=/wskpath,d=domain.com"
+    echo "    --mtt     <VMESS-TCP-TLS option>      p=23443,u=id1,u=id2...,d=domain.com"
+    echo "    --mwp     <VMESS-WS-PLN option>       p=24443,u=id1,u=id2...,w=/wskpath"
+    echo "    --mwt     <VMESS-WS-TLS option>       p=25443,u=id1,u=id2...,w=/wskpath,d=domain.com"
+    echo "    --ttt     <TROJAN-TCP-TLS option>     p=26443,u=pw1,u=pw2...,d=domain.com"
+    echo "    --twp     <TROJAN-WS-PLN option>      p=27443,u=pw1,u=pw2...,w=/wskpath"
+    echo "    --twt     <TROJAN-WS-TLS option>      p=28443,u=pw1,u=pw2...,w=/wskpath,d=domain.com"
+    echo "    --ng-opt  <nginx-options>             p=443,d=domain0.com,d=domain1.com..."
+    echo "    --ng-proxy <nginx-proxy-options>      d=domain0.com,d=domain1.com,p=port-backend,l=location,n=ws|grpc|splt"
+    echo "    --domain-block <domain-rule>          Add a domain rule for routing block, like geosite:category-ads-all"
+    echo "    --ip-block <ip-rule>                  Add a ip-addr rule for routing block, like geoip:private"
+    echo "    --cn-block                            Add routing rules to avoid domains and IPs located in China being proxied"
+    echo "    -u|--user  <global-user-options>      u=id0,u=id1..."
+    echo "    -k|--hook  <hook-url>                 DDNS update or notifing URL to be hit"
+    echo "    -r|--request-domain <domain-name>     Domain name to request for letsencrypt cert"
+    echo "    -c|--cert-home <cert-home-dir>        Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
+    echo "    -i|--stdin                            Read config from STDIN instead of auto generation"
+    echo "    -j|--json                             Json snippet to merge into the config. Say '{"log":{"loglevel":"info"}'"
+    echo "    -d|--debug                            Start in debug mode with verbose output"
 }
 
 Jrules='{"rules":[]}'
 
-TEMP=`getopt -o u:k:r:c:j:di --long user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,lx:,ls:,ms:,ts:,lsg:,lss:,lsw:,msw:,tsw:,lpg:,lps:,lpw:,mpw:,tpw:,ng-opt:,ng-proxy:,json:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:j:di --long user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltt:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,ng-opt:,ng-proxy:,json:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -73,9 +74,9 @@ while true ; do
             INJECT+=("$2")
             shift 2
             ;;
-        --lx|--ls|--ms|--ts|--lsg|--lss|--lsw|--msw|--tsw|--lpg|--lps|--lpw|--mpw|--tpw)
+        --lgp|--lgr|--lgt|--lsp|--lst|--ltr|--ltt|--lwp|--lwt|--mtt|--mwp|--mwt|--ttt|--twp|--twt)
             SVC=`echo $1|tr -d '\-\-'`
-            SVCMD+=("${DIR}server-${SVC}.sh $2")
+            SVCMD+=("${DIR}/server-${SVC}.sh $2")
             shift 2
             ;;
         --domain-block)
@@ -177,8 +178,6 @@ if [ -n "${SVCMD}" ]; then
     if [ "${DEBUG}" = "1" ]; then
         cat $XCONF |jq '.log.loglevel |="debug"' |sponge $XCONF
         echo
-        cat $XCONF
-        echo
     fi
 
     if [ -n "${NGOPT}" ]; then
@@ -208,6 +207,8 @@ if [ -n "${SVCMD}" ]; then
         done
     fi
 
+    cat $XCONF
+    echo
     exec /usr/local/bin/xray -c $XCONF
 
 else

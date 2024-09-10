@@ -31,28 +31,33 @@ COPY nginx-proxy.tpl /etc/nginx/conf.d/
 COPY nginx-grpc.tpl /etc/nginx/conf.d/
 COPY nginx-ws.tpl /etc/nginx/conf.d/
 
-ADD server-lx.sh            /server-lx.sh
-ADD server-ls.sh            /server-ls.sh
-ADD server-ms.sh            /server-ms.sh
-ADD server-ts.sh            /server-ts.sh
+#ADD server-lgp.sh   /server-lgp.sh
+ADD server-lgr.sh   /server-lgr.sh
+ADD server-lgt.sh   /server-lgt.sh
 
-ADD server-lsw.sh           /server-lsw.sh
-ADD server-lsg.sh           /server-lsg.sh
-ADD server-lss.sh           /server-lss.sh
+#ADD server-lsp.sh   /server-lsp.sh
+ADD server-lst.sh   /server-lst.sh
 
-ADD server-msw.sh           /server-msw.sh
-ADD server-tsw.sh           /server-tsw.sh
+ADD server-ltr.sh   /server-ltr.sh
+ADD server-ltt.sh   /server-ltt.sh
 
-ADD server-lpw.sh           /server-lpw.sh
-ADD server-lpg.sh           /server-lpg.sh
-ADD server-lps.sh           /server-lps.sh
+#ADD server-lwp.sh   /server-lwp.sh
+ADD server-lwt.sh   /server-lwt.sh
 
-ADD server-mpw.sh           /server-mpw.sh
-ADD server-tpw.sh           /server-tpw.sh
+ADD server-mtt.sh   /server-mtt.sh
+#ADD server-mwp.sh   /server-mwp.sh
+ADD server-mwt.sh   /server-mwt.sh
 
-ADD server-nginx.sh         /server-nginx.sh
+#ADD server-twp.sh   /server-twp.sh
+ADD server-ttt.sh   /server-ttt.sh
+ADD server-twt.sh   /server-twt.sh
 
-ADD run.sh                  /run.sh
+ADD server-nginx.sh /server-nginx.sh
+ADD fallback.sh     /fallback.sh
+ADD addusertj.sh    /addusertj.sh
+ADD adduser.sh      /adduser.sh
+
+ADD run.sh          /run.sh
 
 RUN chmod 755 /*.sh
 
