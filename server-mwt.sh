@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VMESS-WS-TLS builder"
+    echo "VMESS-WS-TLS server builder"
     echo "Usage: server-mwt <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<d=domain.com>,<w=wskpath>,<u=id0>,<u=id1>..."
 }
 

@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-SPLT-PLAIN builder"
+    echo "VLESS-SPLT-PLAIN server builder"
     echo "Usage: server-lsp <x=xray-config-file>,<p=listen-port>,<w=webpath>,<u=id0>,<u=id1>..."
 }
 

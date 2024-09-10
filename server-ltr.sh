@@ -3,8 +3,8 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-TCP-REALITY builder"
-    echo "Usage: server-ltr <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,[xtls],<d=dest.com>,[pub=xxx,prv=yyy],<u=id0>,<u=id1>..."
+    echo "VLESS-TCP-REALITY server builder"
+    echo "Usage: server-ltr <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,[xtls],<d=dest.com>,[pub=xx,prv=yy,shortId=zz],<u=id0>,<u=id1>..."
 }
 
 options=(`echo $1 |tr ',' ' '`)

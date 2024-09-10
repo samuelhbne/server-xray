@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-GRPC-TLS builder"
+    echo "VLESS-GRPC-TLS server builder"
     echo "Usage: server-lgt <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<s=svcname>,[xtls],<d=domain.com>,<u=id0>,<u=id1>..."
 }
 

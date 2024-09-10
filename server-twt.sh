@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "TROJAN-WS-TLS builder"
+    echo "TROJAN-WS-TLS server builder"
     echo "Usage: server-twt <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<d=domain.com>,<w=wskpath>,<u=pw0>,<u=pw1>..."
 }
 

@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "TROJAN-WS-PLAIN builder"
+    echo "TROJAN-WS-PLAIN server builder"
     echo "Usage: server-twp <x=xray-config-file>,<p=listen-port>,<w=wskpath>,<u=pw0>,<u=pw1>..."
 }
 

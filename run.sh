@@ -8,11 +8,11 @@ XCONF=/tmp/server-xray.json
 usage() {
     echo "server-xray <server-options>"
     echo "    --lgp     <VLESS-GRPC-PLN option>     p=11443,u=id1,u=id2...,s=svcname"
-    echo "    --lgr     <VLESS-GRPC-RLTY option>    p=12443,u=id1,u=id2...,s=svcname,d=dest.com,pub=xxx,prv=yyy"
+    echo "    --lgr     <VLESS-GRPC-RLTY option>    p=12443,u=id1,u=id2...,s=svcname,d=dest.com,pub=xx,prv=yy[,shortId=zz]"
     echo "    --lgt     <VLESS-GRPC-TLS option>     p=13443,u=id1,u=id2...,s=svcname,d=domain.com"
     echo "    --lsp     <VLESS-SPLT-PLN option>     p=14443,u=id1,u=id2...,w=/webpath"
     echo "    --lst     <VLESS-SPLT-TLS option>     p=16443,u=id1,u=id2...,w=/webpath,d=domain.com"
-    echo "    --ltr     <VLESS-TCP-RLTY option>     p=17443,u=id1,u=id2...,[xtls],d=dest.com,pub=xxx,prv=yyy"
+    echo "    --ltr     <VLESS-TCP-RLTY option>     p=17443,u=id1,u=id2...,[xtls],d=dest.com,pub=xx,prv=yy[,shortId=zz]"
     echo "    --ltt     <VLESS-TCP-TLS option>      p=18443,u=id1,u=id2...,[xtls],d=domain.com"
     echo "    --lwp     <VLESS-WS-PLN option>       p=19443,u=id1,u=id2...,w=/wskpath"
     echo "    --lwt     <VLESS-WS-TLS option>       p=22443,u=id1,u=id2...,w=/wskpath,d=domain.com"

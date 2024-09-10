@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-GRPC-PLAIN builder"
+    echo "VLESS-GRPC-PLAIN server builder"
     echo "Usage: server-lgp <x=xray-config-file>,<p=listen-port>,<s=svcname>,<u=id0>,<u=id1>..."
 }
 

@@ -3,7 +3,7 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VMESS-WS-PLAIN builder"
+    echo "VMESS-WS-PLAIN server builder"
     echo "Usage: server-mwp <x=xray-config-file>,<p=listen-port>,<w=wskpath>,<u=id0>,<u=id1>..."
 }
 
