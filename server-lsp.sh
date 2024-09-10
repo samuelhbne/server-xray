@@ -68,7 +68,7 @@ do
 done
 
 # Network settings
-cat $XCONF |jq --arg port "${port}" \
+cat $XCONF |jq --arg port "${port}" --arg webpath "${webpath}" \
 '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"splithttp","splithttpSettings":{"path":$webpath}} ' \
 |sponge $XCONF
 

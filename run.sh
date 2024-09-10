@@ -181,7 +181,7 @@ if [ -n "${SVCMD}" ]; then
     fi
 
     if [ -n "${NGOPT}" ]; then
-        ngcmd="${DIR}server-nginx.sh"
+        ngcmd="${DIR}/server-nginx.sh"
         for ngopt in "${NGOPT[@]}"
         do
             ngcmd="${ngcmd} --ng-opt ${ngopt},$xopt"

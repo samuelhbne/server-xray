@@ -52,7 +52,7 @@ psw="${uopt[0]}"
 level="${uopt[1]}"
 email="${uopt[2]}"
 
-if [ -z "${uid}" ]; then
+if [ -z "${psw}" ]; then
     echo "Error: Undefined UID \"$user\"" >&2
     echo "Correct user format: user=<password>[:level:email]" >&2
     echo "Like: user=mypw:0:me@g.cn" >&2
