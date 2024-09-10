@@ -31,24 +31,24 @@ COPY nginx-proxy.tpl /etc/nginx/conf.d/
 COPY nginx-grpc.tpl /etc/nginx/conf.d/
 COPY nginx-ws.tpl /etc/nginx/conf.d/
 
-#ADD server-lgp.sh   /server-lgp.sh
+ADD server-lgp.sh   /server-lgp.sh
 ADD server-lgr.sh   /server-lgr.sh
 ADD server-lgt.sh   /server-lgt.sh
 
-#ADD server-lsp.sh   /server-lsp.sh
+ADD server-lsp.sh   /server-lsp.sh
 ADD server-lst.sh   /server-lst.sh
 
 ADD server-ltr.sh   /server-ltr.sh
 ADD server-ltt.sh   /server-ltt.sh
 
-#ADD server-lwp.sh   /server-lwp.sh
+ADD server-lwp.sh   /server-lwp.sh
 ADD server-lwt.sh   /server-lwt.sh
 
 ADD server-mtt.sh   /server-mtt.sh
-#ADD server-mwp.sh   /server-mwp.sh
+ADD server-mwp.sh   /server-mwp.sh
 ADD server-mwt.sh   /server-mwt.sh
 
-#ADD server-twp.sh   /server-twp.sh
+ADD server-twp.sh   /server-twp.sh
 ADD server-ttt.sh   /server-ttt.sh
 ADD server-twt.sh   /server-twt.sh
 
