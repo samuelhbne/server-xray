@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#while :; do sleep 2073600; done
-
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
 CERTHOME="/root/.acme.sh"
