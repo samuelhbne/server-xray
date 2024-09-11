@@ -19,7 +19,7 @@ do
             xuser+=("${kv[1]}")
             ;;
         w|wpath)
-            webpath="${kv[1]}"
+            wspath="${kv[1]}"
             ;;
         x|xconf)
             xconf="${kv[1]}"

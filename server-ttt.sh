@@ -12,7 +12,6 @@ for option in "${options[@]}"
 do
     kv=(`echo $option |tr '=' ' '`)
     case "${kv[0]}" in
-    case "${kv[0]}" in
         c|certhome)
             certhome="${kv[1]}"
             ;;
