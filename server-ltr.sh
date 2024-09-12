@@ -76,8 +76,8 @@ if [ -z "${xconf}" ]; then
     exit 1
 fi
 
-if [ -z "${prvkey}" ] || [ -z "${pubkey}" ] ; then
-    echo "Warning: PublicKey / PrivateKey undefined, Generated new..."
+if [ -z "${prvkey}" ]; then
+    echo "Warning: PrivateKey undefined, Generated new..."
     kv=(`/usr/local/bin/xray x25519|cut -d ' ' -f3|tr ' '`)
     prvkey="${kv[0]}"
     pubkey="${kv[1]}"
