@@ -13,11 +13,11 @@ The following command will:
 
 1. Update DDNS record of mydomain.duckdns.org pointing the current host
 2. Request a new Lesencrypt TLS cert for this domain
-3. Start VLESS-TCP-XTLS server on port 443
+3. Start VLESS-TCP-TLS-XTLS server on port 443
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
---lx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
+--lttx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r mydomain.duckdns.org
 ...
@@ -39,7 +39,7 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
---lx myid@mydomain.duckdns.org:443
+--lttx myid@mydomain.duckdns.org:443
 ...
 
 $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
