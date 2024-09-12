@@ -8,10 +8,10 @@ NGCONF="/etc/nginx/nginx.conf"
 
 usage() {
     echo "server-nginx --ng-server <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
-    echo "    --ng-server   <c=cert-home-dir,d=host-domain>[,p=443]"
     echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws|splt>[,h=127.0.0.1][,d=host-domain]"
-    echo "    --st-port     <port-num>"
+    echo "    --ng-server   <c=cert-home-dir,d=host-domain>[,p=443]"
     echo "    --st-map      <sni=domain.com,ups=127.0.0.1:8443>"
+    echo "    --st-port     <port-num>"
 }
 
 TEMP=`getopt -o m:p:s:x: --long ng-server:,ng-proxy:,st-map:,st-port: -n "$0" -- $@`
@@ -48,7 +48,11 @@ while true ; do
     esac
 done
 
-if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then echo "No server/stream defined. Quit."; exit 1; fi
+if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then
+    echo "No server/stream defined. Quit.";
+    usage;
+    exit 1;
+fi
 
 # Running as root to enable low port listening. Necessary for Fargate or k8s.
 # sed -i 's/^user nginx;$/user root;/g' /etc/nginx/nginx.conf
@@ -59,11 +63,12 @@ if [ -f /etc/nginx/conf.d/default.conf ]; then
     mv default.conf default.conf.disable
 fi
 
+# Remove all lines generated previously after #STSTUB tag.
+sed -i '/\#STSTUB/q' /etc/nginx/nginx.conf
+# Remove #STSTUB tag
+sed -i '/\#STSTUB/d' /etc/nginx/nginx.conf
+
 if [ -n "${STPORT}" ]; then
-    # Remove all lines generated previously after #STSTUB tag.
-    sed -i '/\#STSTUB/q' /etc/nginx/nginx.conf
-    # Remove #STSTUB tag
-    sed -i '/\#STSTUB/d' /etc/nginx/nginx.conf
     rm /tmp/map.conf
     rm /tmp/ups.conf
     # Attach the stream configuration to the tail of nginx.conf
