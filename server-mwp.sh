@@ -12,6 +12,9 @@ for option in "${options[@]}"
 do
     kv=(`echo $option |tr '=' ' '`)
     case "${kv[0]}" in
+        d|domain)
+            domain="${kv[1]}"
+            ;;
         p|port)
             port="${kv[1]}"
             ;;
