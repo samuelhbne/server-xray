@@ -2,15 +2,15 @@ FROM golang:1.23-alpine3.20 AS builder
 
 ARG XRAYVER='v1.8.24'
 
-RUN apk add --no-cache bash git build-base
+RUN apk add --no-cache bash git build-base curl
 
 WORKDIR /go/src/XTLS/Xray-core
 RUN git clone https://github.com/XTLS/Xray-core.git . && \
     git checkout ${XRAYVER} && \
     go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
-RUN cd /tmp; wget -c -t3 -T30 https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
-RUN cd /tmp; wget -c -t3 -T30 https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
+RUN cd /tmp; curl -O https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
+RUN cd /tmp; curl -O https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
     
 
 FROM nginx:stable-alpine3.20
@@ -26,10 +26,11 @@ RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs
 RUN cd /root; ln -s acme.sh-${ACMEVER} acme.sh; mkdir .acme.sh
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/sbin/nginx
 
-COPY site-ssl.conf.tpl /etc/nginx/conf.d/
-COPY nginx-proxy.tpl /etc/nginx/conf.d/
-COPY nginx-grpc.tpl /etc/nginx/conf.d/
-COPY nginx-ws.tpl /etc/nginx/conf.d/
+COPY site-ssl.conf.tpl  /etc/nginx/conf.d/
+COPY nginx-stream.tpl   /etc/nginx/conf.d/
+COPY nginx-proxy.tpl    /etc/nginx/conf.d/
+COPY nginx-grpc.tpl     /etc/nginx/conf.d/
+COPY nginx-ws.tpl       /etc/nginx/conf.d/
 
 ADD server-lgp.sh   /server-lgp.sh
 ADD server-lgr.sh   /server-lgr.sh

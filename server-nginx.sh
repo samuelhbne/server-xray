@@ -3,27 +3,39 @@
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
 TPL="site-ssl.conf.tpl"
+STPL="nginx-stream.tpl"
+NGCONF="/etc/nginx/nginx.conf"
 
 usage() {
-    echo "server-nginx --ng-opt <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
-    echo "    --ng-opt      <c=cert-home-dir,d=host-domain>[,p=443]"
+    echo "server-nginx --ng-server <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
+    echo "    --ng-server   <c=cert-home-dir,d=host-domain>[,p=443]"
     echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws|splt>[,h=127.0.0.1][,d=host-domain]"
+    echo "    --st-port     <port-num>"
+    echo "    --st-map      <sni=domain.com,ups=127.0.0.1:8443>"
 }
 
-TEMP=`getopt -o o:x: --long ng-opt:,ng-proxy: -n "$0" -- $@`
+TEMP=`getopt -o m:p:s:x: --long ng-server:,ng-proxy:,st-map:,st-port: -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
 while true ; do
     case "$1" in
-        -o|--ng-opt)
-            NGOPT+=("$2")
+        -m|--st-map)
+            STMAP+=("$2")
+            shift 2
+            ;;
+        -p|--st-port)
+            STPORT="$2"
+            shift 2
+            ;;
+        -s|--ng-server)
+            NGSVR+=("$2")
             shift 2
             ;;
         -x|--ng-proxy)
             NGPROXY+=("$2")
             shift 2
-            ;;        
+            ;;
         --)
             shift
             break
@@ -36,21 +48,56 @@ while true ; do
     esac
 done
 
-if [ -z "${NGOPT}" ]; then usage; exit 1; fi
-if [ -z "${NGPROXY}" ]; then usage; exit 1; fi
+if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then echo "No server/stream defined. Quit."; exit 1; fi
 
 # Running as root to enable low port listening. Necessary for Fargate or k8s.
 # sed -i 's/^user nginx;$/user root;/g' /etc/nginx/nginx.conf
-mkdir -p /run/nginx/
+#mkdir -p /run/nginx/
+
 cd /etc/nginx/conf.d/
 if [ -f /etc/nginx/conf.d/default.conf ]; then
     mv default.conf default.conf.disable
 fi
 
-for ngopt in "${NGOPT[@]}"
+if [ -n "${STPORT}" ]; then
+    # Remove all lines generated previously after #STSTUB tag.
+    sed -i '/\#STSTUB/q' /etc/nginx/nginx.conf
+    # Remove #STSTUB tag
+    sed -i '/\#STSTUB/d' /etc/nginx/nginx.conf
+    rm /tmp/map.conf
+    rm /tmp/ups.conf
+    # Attach the stream configuration to the tail of nginx.conf
+    cat ${STPL} >> /etc/nginx/nginx.conf
+    for stmap in "${STMAP[@]}"
+    do
+        options=(`echo $stmap |tr ',' ' '`)
+        for option in "${options[@]}"
+        do
+            kv=(`echo $option |tr '=' ' '`)
+            case "${kv[0]}" in
+                sni)
+                    sni="${kv[1]}"
+                    ;;
+                ups|upstream)
+                    upstream="${kv[1]}"
+                    ;;
+            esac
+        done
+        upsname=`echo $sni|sed 's/\./_/g'`
+        echo "        $sni $upsname;"       >>/tmp/map.conf
+        echo "    upstream $upsname {"      >>/tmp/ups.conf
+        echo "        server $upstream;"    >>/tmp/ups.conf
+        echo "    }"                        >>/tmp/ups.conf
+    done
+    sed -i '/#MAPSTUB/r /tmp/map.conf' /etc/nginx/nginx.conf
+    sed -i '/#UPSSTUB/r /tmp/ups.conf' /etc/nginx/nginx.conf
+    sed -i "s/STPORT/${STPORT}/g" /etc/nginx/nginx.conf
+fi
+
+for ngsvr in "${NGSVR[@]}"
 do
     unset certhome
-    options=(`echo $ngopt |tr ',' ' '`)
+    options=(`echo $ngsvr |tr ',' ' '`)
     for option in "${options[@]}"
     do
         kv=(`echo $option |tr '=' ' '`)
@@ -127,7 +174,7 @@ do
     for domain in "${xdomain[@]}"
     do
         if ! [ -f "${domain}.conf" ]; then echo "Assigned domain ${domain} not found"; usage; exit 1; fi
-        # Replace the last(only) single line '}' with specific tpl file, hence insert a new section into the Nginx config file
+        # Replace the last(only) single line '}' with the content of tpl file, hence insert a new section into the Nginx config file
         case "${xnetwork}" in
             ws|websocket)
                 sed -i -e "/^\}$/r nginx-ws.tpl" -e "/^\}$/d" ${domain}.conf
