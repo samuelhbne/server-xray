@@ -67,7 +67,7 @@ if [ -z "${level}" ]; then
 fi
 
 if [ -z "${email}" ]; then
-    email="${uid}@${comment}"
+    email="${psw}@${comment}"
 fi
 
 jq --arg port "${port}" --arg psw "${psw}" --arg level "${level}" --arg email "${email}" --arg flow "${flow}" \
