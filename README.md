@@ -7,7 +7,7 @@ Please have a look over the sibling project [proxy-xray](https://github.com/samu
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-latest/badge.svg)
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-dev/badge.svg)
 
-## How to start the container
+## Quick start examples
 
 The following command will:
 
@@ -16,8 +16,8 @@ The following command will:
 3. Start VLESS-TCP-TLS-XTLS server on port 443
 
 ```shell
-$ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
---lttx p=2443,d=mydomain.duckdns.org,u=myid,f=:8080 \
+$ docker run --name server-xray -p 80:80 -p 443:443 -d samuelhbne/server-xray \
+--lttx p=443,d=mydomain.duckdns.org,u=myid \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r mydomain.duckdns.org
 ...
@@ -25,7 +25,7 @@ $ docker run --name server-xray -p 80:80 -p 443:2443 -d samuelhbne/server-xray \
 
 ### NOTE 1
 
-- Please replace the port 443 (-p 443:2443) with the port number you choose for incoming connection.
+- Please replace the port 443 with the port number you choose for incoming connection.
 - Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
 - Please replace "myid" with an id string or a standard UUID ("MyMobile", "b77af52c-2a93-4b3e-8538-f9f91114ba00" etc.) you set for client auth.
 - Please replace "mydomain.duckdns.org" with the domain-name of yours.
