@@ -1,4 +1,4 @@
-    location LOCATION {
+    location WEBPATH {
         if ($http_upgrade != "websocket") {
             return 404;
         }

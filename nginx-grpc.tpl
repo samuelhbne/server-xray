@@ -1,4 +1,4 @@
-    location LOCATION {
+    location WEBPATH {
         if ($content_type !~ "application/grpc") {
             return 404;
         }

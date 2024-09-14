@@ -54,9 +54,9 @@ if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then
     exit 1;
 fi
 
-# Running as root to enable low port listening. Necessary for Fargate or k8s.
-# sed -i 's/^user nginx;$/user root;/g' /etc/nginx/nginx.conf
-#mkdir -p /run/nginx/
+# Running as root to enable transparent stream.
+# sed -i 's/^user \+nginx;$/user  root;/g' /etc/nginx/nginx.conf
+# mkdir -p /run/nginx/
 
 cd /etc/nginx/conf.d/
 if [ -f /etc/nginx/conf.d/default.conf ]; then
@@ -94,8 +94,10 @@ if [ -n "${STPORT}" ]; then
         echo "        server $upstream;"    >>/tmp/ups.conf
         echo "    }"                        >>/tmp/ups.conf
     done
-    sed -i '/#MAPSTUB/r /tmp/map.conf' /etc/nginx/nginx.conf
-    sed -i '/#UPSSTUB/r /tmp/ups.conf' /etc/nginx/nginx.conf
+    # Add map.conf down to #MAPSTUB tag
+    sed -i '/#XMAP-TAG/r /tmp/map.conf' /etc/nginx/nginx.conf
+    # Add ups.conf down to #UPSSTUB tag
+    sed -i '/#XUPSTREAM-TAG/r /tmp/ups.conf' /etc/nginx/nginx.conf
     sed -i "s/STPORT/${STPORT}/g" /etc/nginx/nginx.conf
 fi
 
@@ -179,24 +181,22 @@ do
     for domain in "${xdomain[@]}"
     do
         if ! [ -f "${domain}.conf" ]; then echo "Assigned domain ${domain} not found"; usage; exit 1; fi
-        # Replace the last(only) single line '}' with the content of tpl file, hence insert a new section into the Nginx config file
+        # Add tpl file content down to #LOCATION tag
         case "${xnetwork}" in
             ws|websocket)
-                sed -i -e "/^\}$/r nginx-ws.tpl" -e "/^\}$/d" ${domain}.conf
+                sed -i '/#XLOCATION-TAG/r nginx-ws.tpl' ${domain}.conf
                 ;;
             grpc)
-                sed -i -e "/^\}$/r nginx-grpc.tpl" -e "/^\}$/d" ${domain}.conf
+                sed -i '/#XLOCATION-TAG/r nginx-grpc.tpl' ${domain}.conf
                 ;;
             splt|proxy)
-                sed -i -e "/^\}$/r nginx-proxy.tpl" -e "/^\}$/d" ${domain}.conf
+                sed -i '/#XLOCATION-TAG/r nginx-proxy.tpl' ${domain}.conf
                 ;;
         esac
-        # Then add '}' to the end of the Nginx config file
-        echo -e "\n}" >> ${domain}.conf
         ESC_LOCATION=$(printf '%s\n' "${xlocation}" | sed -e 's/[]\/$*.^[]/\\&/g')
         sed -i "s/HOST/${xhost}/g" ${domain}.conf
         sed -i "s/PORT/${xport}/g" ${domain}.conf
-        sed -i "s/LOCATION/${ESC_LOCATION}/g" ${domain}.conf
+        sed -i "s/WEBPATH/${ESC_LOCATION}/g" ${domain}.conf
     done
 done
 exit 0
