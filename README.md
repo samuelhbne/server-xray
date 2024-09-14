@@ -7,7 +7,7 @@ Please have a look over the sibling project [proxy-xray](https://github.com/samu
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-latest/badge.svg)
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-dev/badge.svg)
 
-## Quick start guide
+## Quick start
 
 ### 1. VLESS-TCP-TLS-XTLS server creation
 
