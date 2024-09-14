@@ -7,35 +7,50 @@ Please have a look over the sibling project [proxy-xray](https://github.com/samu
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-latest/badge.svg)
 ![docker-build](https://github.com/samuelhbne/server-xray/workflows/docker-buildx-dev/badge.svg)
 
-## Quick start examples
+## Quick start guide
 
-The following command will:
+### 1. VLESS-TCP-TLS-XTLS server creation
 
-1. Update DDNS record of mydomain.duckdns.org pointing the current host
-2. Request a new Lesencrypt TLS cert for this domain
-3. Start VLESS-TCP-TLS-XTLS server on port 443
+The following command starts a VLESS-TCP-TLS-XTLS server on port 443, also, it update the DDNS record of mydomain.duckdns.org point to the current server, then requests a new Lesencrypt TLS cert for the domain.
 
 ```shell
-$ docker run --name server-xray -p 80:80 -p 443:443 -d samuelhbne/server-xray \
+$ docker run --name server-xtls -p 80:80 -p 443:443 -d samuelhbne/server-xray \
 --lttx p=443,d=mydomain.duckdns.org,u=myid \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
 -r mydomain.duckdns.org
 ...
 ```
 
-### NOTE 1
+** NOTE **
 
-- Please replace the port 443 with the port number you choose for incoming connection.
-- Port 80 export (-p 80:80) is necessary for Letsencrypt cert requesting, so don't miss it.
-- Please replace "myid" with an id string or a standard UUID ("MyMobile", "b77af52c-2a93-4b3e-8538-f9f91114ba00" etc.) you set for client auth.
-- Please replace "mydomain.duckdns.org" with the domain-name of yours.
-- You can optionally assign a HOOK-URL to update the DDNS to the current server IP.
+- Port 80 exposure (-p 80:80) is necessary for Letsencrypt domain verification during cert requesting.
 
-## How to verify if server-xray is running properly
+### 2. VLESS-TCP-REALITY-XTLS server creation
 
-Try to connect the server from Xray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, id etc. set above. Or verify it from Ubuntu / Debian / Raspbian client host follow the instructions below.
+The following command starts a VLESS-TCP-REALITY-XTLS server on port 443. And update DDNS optionally, although IP only based connection is possible due to the nature of REALITY connection.
 
-### Verifying server-xray connection with proxy-xray
+```shell
+# Generate a x25519 via xray first
+$ docker run --rm -it --entrypoint /usr/local/bin/xray samuelhbne/server-xray x25519
+Private key: OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4
+Public key: qAaJnTE_zYWNuXuIdlpIfSt5beveuV4PyBaP76WE7jU
+
+# Create a new VLESS-TCP-REALITY-XTLS server with the private key. Apply yahoo.com as the fake Destination
+$ docker run --name server-reality-xtls -p 443:443 -d samuelhbne/server-xray \
+--ltrx p=443,d=yahoo.com,u=myid,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4 \
+-k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+```
+
+** NOTE **
+
+Domain name and TLS cert are not necessary due to the nature of REALITY connection. Althouth you can obtain a  DDNS domain name to facilitate client connecting optionally.
+
+
+## How to verify if the xray-server is running properly
+
+Try to connect the server from Xray compatible mobile app like [v2rayNG](https://github.com/2dust/v2rayNG) for Android or [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118) for iOS with the host-name, port, id etc. set above. Or verify it from Ubuntu / Debian / Raspbian client following the instructions below.
+
+### Verifying VLESS-TCP-TLS-XTLS connection with [proxy-xray](https://github.com/samuelhbne/proxy-xray)
 
 ```shell
 $ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
@@ -46,14 +61,24 @@ $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 12.34.56.78
 ```
 
-### NOTE 2
+### Verifying VLESS-TCP-REALITY-XTLS connection with [proxy-xray](https://github.com/samuelhbne/proxy-xray)
+
+```shell
+# Create a new VLESS-TCP-REALITY-XTLS client with the public key generated above. Apply yahoo.com as the fake Destination
+$ docker run --name proxy-xray -p 1080:1080 -d samuelhbne/proxy-xray \
+--ltrx myid@mydomain.duckdns.org:443,d=yahoo.com,shortId=abcd,pub=qAaJnTE_zYWNuXuIdlpIfSt5beveuV4PyBaP76WE7jU
+...
+
+$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
+12.34.56.78
+```
 
 #### How it works
 
 - proxy-xray created a SOCKS5 proxy that tunneling traffic through your Xray server.
 - curl query was sent to checkip.amazonaws.com via the SOCKS5 proxy served by proxy-xray.
 - Like this: curl --> proxy-xray --> server-xray --> checkip.amazonaws.com website.
-- You should get the public IP address of server-xray if all go well.
+- You should get the public IP address of server-xray if all going well.
 - Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) for more details.
 
 ## Full usage
@@ -235,16 +260,17 @@ The following command will:
 
 1. Assume to read TLS cert from /home/ubuntu/cert/domain*.duckdns.org/fullchain.cer
 2. Assume to read private key from  /home/ubuntu/cert/domain*.duckdns.org/domain*.duckdns.org.key
-3. Assume domain0.duckdns.org and domain1.duckdns.org has been resolved to the current server
-4. Run Vless-gRPC-PLAIN service on port 55443, location /svc0, serve all domains
-5. Run Vless-WebSocket-PLAIN service on port 53443, location /ws1, serve all domains
-6. Run Trojan-WebSocket-PLAIN service on port 51443, location /ws2, serve only domain1.duckdns.org
-7. Run nginx on port 443 as a TLS front with the given certs for 2 domains, proxy 3 services with 3 locations
-8. Only port 443 will be available for access from internet
+3. Assume domain0.duckdns.org and domain1.duckdns.org has been pointed to the current server
+4. Run Vless-gRPC-PLAIN service on port 55443, location /svc0, serve on all domains
+5. Run Vless-WebSocket-PLAIN service on port 53443, location /ws1, serve on all domains
+6. Run Trojan-WebSocket-PLAIN service on port 51443, location /ws2, serve only on domain1.duckdns.org
+7. Run nginx on port 443 as a TLS front with the given certs of the 2 domains, proxy 3 services with different locations
+8. Only port 443 will be exposed for internet accessing
+9. All proxy requests for IPs or websites located in China will be BLOCKED to protect users from being traced or de-anonymous.
 
 ```shell
 $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
--c /opt/cert \
+-c /opt/cert --cn-block \
 --lgp p=55443,u=myid0,s=svc0 \
 --lwp p=53443,u=myid1,w=/ws1 \
 --twp p=51443,u=myid2,w=/ws2 \
@@ -260,7 +286,7 @@ $ docker run --name server-xray -p 443:443 -v /home/ubuntu/cert:/opt/cert -d sam
 Only PLAIN (NON-TLS) services (--lgp, --lwp, --mwp, -twp) can be proxied by Nginx.
 
 NEVER EVER expose any plain services on internet directly. They are designed to be proxied by Nginx TLS front
-hence all different transport portocols can be accessed with diffent web-path while only port 443 exposed via Nginx.
+hence all different transport portocols can be accessed via diffent web-path while only the TLS port 443 will be exposed via Nginx.
 
 #### Multiple service connection verifying instructions
 
