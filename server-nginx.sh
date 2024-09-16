@@ -149,8 +149,10 @@ do
                 port="${kv[1]}"
                 ;;
             d|domain)
-                domain="${kv[1]}"
-                DOMAIN+=("${kv[1]}")
+                # Each server serve one domain only
+                svr_domain="${kv[1]}"
+                # Add each server domain into full domain list
+                ALLDOMAINS+=("${kv[1]}")
                 ;;
             proxy_acpt)
                 NGPROTOCOL="proxy_protocol"
@@ -159,14 +161,14 @@ do
     done
 
     if [ -z "${certhome}" ]; then echo "Error: certhome undefined."; usage; exit 1; fi
-    if [ -z "${domain}" ]; then echo "Error: domain undefined."; usage; exit 1; fi
+    if [ -z "${svr_domain}" ]; then echo "Error: server domain undefined."; usage; exit 1; fi
     if [ -z "${port}" ]; then port=443; fi
     if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
-    fullchain="${certhome}/${domain}/fullchain.cer"
-    prvkey="${certhome}/${domain}/${domain}.key"
+    fullchain="${certhome}/${svr_domain}/fullchain.cer"
+    prvkey="${certhome}/${svr_domain}/${svr_domain}.key"
     if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
-        echo "${domain} TLS cert missing?"
+        echo "${svr_domain} TLS cert missing?"
         echo "Abort."
         exit 2
     fi
@@ -176,30 +178,30 @@ do
     cat "${SITE_TPL}" \
         | sed "s/CERTFILE/${ESC_CERTFILE}/g" \
         | sed "s/PRVKEYFILE/${ESC_PRVKEYFILE}/g" \
-        | sed "s/NGDOMAIN/${domain}/g" \
+        | sed "s/NGDOMAIN/${svr_domain}/g" \
         | sed "s/NGPORT/${port}/g" \
         | sed "s/NGPROTOCOL/${NGPROTOCOL}/g" \
-        >"${domain}.conf"
+        >"${svr_domain}.conf"
     # Applying proxy log format instead of main format when --ng-server proxy_pass was set
     if [ -n "${NGPROTOCOL}" ]; then
-        sed -i '/access_log/s/main/proxy/' "${domain}.conf"
-        sed -i 's/remote_addr/proxy_protocol_addr/g' "${domain}.conf"
-        sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${domain}.conf"
+        sed -i '/access_log/s/main/proxy/' "${svr_domain}.conf"
+        sed -i 's/remote_addr/proxy_protocol_addr/g' "${svr_domain}.conf"
+        sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${svr_domain}.conf"
     fi
-    echo "Generated /etc/nginx/conf.d/${domain}.conf ====>"
-    cat /etc/nginx/conf.d/${domain}.conf
+    echo "Generated /etc/nginx/conf.d/${svr_domain}.conf ====>"
+    cat /etc/nginx/conf.d/${svr_domain}.conf
 done
 
 for ngproxy in "${NGPROXY[@]}"
 do
-    unset xdomain xhost xport xlocation xnetwork
+    unset XDOMAINS xhost xport xlocation xnetwork
     options=(`echo $ngproxy |tr ',' ' '`)
     for option in "${options[@]}"
     do
         kv=(`echo $option |tr '=' ' '`)
         case "${kv[0]}" in
             d|domain)
-                xdomain+=("${kv[1]}")
+                XDOMAINS+=("${kv[1]}")
                 ;;
             h|host)
                 xhost="${kv[1]}"
@@ -217,39 +219,39 @@ do
     done
 
     if [ -z "${xhost}" ]; then xhost="127.0.0.1"; fi
-    if [ -z "${xdomain}" ]; then xdomain=("${DOMAIN[@]}"); fi
+    if [ -z "${XDOMAINS}" ]; then XDOMAINS=("${ALLDOMAINS[@]}"); fi
     if [ -z "${xnetwork}" ]; then echo "Missing network: $ngproxy"; usage; exit 1; fi
     if [ -z "${xlocation}" ]; then echo "Missing location: $ngproxy"; usage; exit 1; fi
     if [ -z "${xport}" ]; then echo "Missing port: $ngproxy"; usage; exit 1; fi
     if ! [ "${xport}" -eq "${xport}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
 
-    for domain in "${xdomain[@]}"
+    for xdomain in "${XDOMAINS[@]}"
     do
-        if ! [ -f "${domain}.conf" ]; then echo "Assigned domain ${domain} not found"; usage; exit 1; fi
+        if ! [ -f "${xdomain}.conf" ]; then echo "Assigned proxy domain ${xdomain} not found"; usage; exit 1; fi
         # Add tpl file content down to #LOCATION tag
         case "${xnetwork}" in
             ws|websocket)
-                sed -i '/#XLOCATION_TAG/r nginx-ws.tpl' ${domain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-ws.tpl' ${xdomain}.conf
                 ;;
             grpc)
-                sed -i '/#XLOCATION_TAG/r nginx-grpc.tpl' ${domain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-grpc.tpl' ${xdomain}.conf
                 ;;
             splt|proxy)
-                sed -i '/#XLOCATION_TAG/r nginx-proxy.tpl' ${domain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-proxy.tpl' ${xdomain}.conf
                 ;;
         esac
         ESC_LOCATION=$(printf '%s\n' "${xlocation}" | sed -e 's/[]\/$*.^[]/\\&/g')
-        sed -i "s/HOST/${xhost}/g" ${domain}.conf
-        sed -i "s/PORT/${xport}/g" ${domain}.conf
-        sed -i "s/WEBPATH/${ESC_LOCATION}/g" ${domain}.conf
+        sed -i "s/HOST/${xhost}/g" ${xdomain}.conf
+        sed -i "s/PORT/${xport}/g" ${xdomain}.conf
+        sed -i "s/WEBPATH/${ESC_LOCATION}/g" ${xdomain}.conf
         # Applying proxy log format instead of main format when --ng-server proxy_pass was set
         if [ -n "${NGPROTOCOL}" ]; then
-            sed -i '/access_log/s/main/proxy/' "${domain}.conf"
-            sed -i 's/remote_addr/proxy_protocol_addr/g' "${domain}.conf"
-            sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${domain}.conf"
+            sed -i '/access_log/s/main/proxy/' "${xdomain}.conf"
+            sed -i 's/remote_addr/proxy_protocol_addr/g' "${xdomain}.conf"
+            sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${xdomain}.conf"
         fi
-        echo "Generated /etc/nginx/conf.d/${domain}.conf ====>"
-        cat /etc/nginx/conf.d/${domain}.conf
+        echo "Generated /etc/nginx/conf.d/${xdomain}.conf ====>"
+        cat /etc/nginx/conf.d/${xdomain}.conf
     done
 done
 exit 0
