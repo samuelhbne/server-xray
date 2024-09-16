@@ -8,6 +8,7 @@ stream {
 
     server {
         listen STPORT reuseport;
+        listen [::]:STPORT reuseport;
         proxy_pass $stream_map;
         #STPROXY_PASS_TAG
         ssl_preread on;
