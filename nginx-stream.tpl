@@ -1,15 +1,15 @@
-#STSTUB
+#STREAM_TAG
 stream {
     map $ssl_preread_server_name $stream_map {
-        #XMAP-TAG
+        #XMAP_TAG
     }
 
-    #XUPSTREAM-TAG
+    #XUPSTREAM_TAG
 
     server {
         listen STPORT reuseport;
         proxy_pass $stream_map;
-        # proxy_bind $remote_addr transparent;
+        #STPROXY_PASS_TAG
         ssl_preread on;
     }
 }

@@ -32,6 +32,8 @@ COPY nginx-proxy.tpl    /etc/nginx/conf.d/
 COPY nginx-grpc.tpl     /etc/nginx/conf.d/
 COPY nginx-ws.tpl       /etc/nginx/conf.d/
 
+COPY proxy-log-fmt.tpl  /etc/nginx/conf.d/001-proxy-log-fmt.conf
+
 ADD server-lgp.sh   /server-lgp.sh
 ADD server-lgr.sh   /server-lgr.sh
 ADD server-lgt.sh   /server-lgt.sh

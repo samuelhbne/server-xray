@@ -2,38 +2,42 @@
 
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
-TPL="site-ssl.conf.tpl"
-STPL="nginx-stream.tpl"
+SITE_TPL="site-ssl.conf.tpl"
+STREAM_TPL="nginx-stream.tpl"
 NGCONF="/etc/nginx/nginx.conf"
 
 usage() {
     echo "server-nginx --ng-server <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
     echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws|splt>[,h=127.0.0.1][,d=host-domain]"
-    echo "    --ng-server   <c=cert-home-dir,d=host-domain>[,p=443]"
+    echo "    --ng-server   <c=cert-home-dir,d=host-domain>[,p=443],[proxy_acpt]"
     echo "    --st-map      <sni=domain.com,ups=127.0.0.1:8443>"
-    echo "    --st-port     <port-num>"
+    echo "    --st-server   [p=443],[proxy_pass]"
 }
 
-TEMP=`getopt -o m:p:s:x: --long ng-server:,ng-proxy:,st-map:,st-port: -n "$0" -- $@`
+TEMP=`getopt -o m:n:p:s:x: --long ng-server:,ng-proxy:,st-server:,st-map: -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
 while true ; do
     case "$1" in
-        -m|--st-map)
-            STMAP+=("$2")
-            shift 2
-            ;;
-        -p|--st-port)
-            STPORT="$2"
-            shift 2
-            ;;
-        -s|--ng-server)
+        # Multiple Nginx domain servers Allowed
+        -n|--ng-server)
             NGSVR+=("$2")
             shift 2
             ;;
+        # Multiple Nginx proxy locations Allowed
         -x|--ng-proxy)
             NGPROXY+=("$2")
+            shift 2
+            ;;
+        # Only SINGLE Stream server Allowed
+        -s|--st-server)
+            STSVR="$2"
+            shift 2
+            ;;
+        # Multiple Nginx SNI map items Allowed
+        -m|--st-map)
+            STMAP+=("$2")
             shift 2
             ;;
         --)
@@ -49,7 +53,7 @@ while true ; do
 done
 
 if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then
-    echo "No server/stream defined. Quit.";
+    echo "No Stream/Server defined. Quit.";
     usage;
     exit 1;
 fi
@@ -63,16 +67,36 @@ if [ -f /etc/nginx/conf.d/default.conf ]; then
     mv default.conf default.conf.disable
 fi
 
-# Remove all lines generated previously after #STSTUB tag.
-sed -i '/\#STSTUB/q' /etc/nginx/nginx.conf
-# Remove #STSTUB tag
-sed -i '/\#STSTUB/d' /etc/nginx/nginx.conf
+# Remove all lines generated previously after #STREAM_TAG tag.
+sed -i '/\#STREAM_TAG/q' /etc/nginx/nginx.conf
+# Remove #STREAM_TAG tag
+sed -i '/\#STREAM_TAG/d' /etc/nginx/nginx.conf
+# Remove temp files generated previously.
+rm /tmp/stmap.conf; rm /tmp/stups.conf; rm /tmp/stproxy.conf
 
-if [ -n "${STPORT}" ]; then
-    rm /tmp/map.conf
-    rm /tmp/ups.conf
+if [ -n "${STSVR}" ]; then
+options=(`echo $STSVR |tr ',' ' '`)
+    for option in "${options[@]}"
+    do
+        kv=(`echo $option |tr '=' ' '`)
+        case "${kv[0]}" in
+            p|port)
+                STPORT="${kv[1]}"
+                ;;
+            x|proxy_pass)
+                STPROXY_PASS=1
+                ;;
+        esac
+    done
+
+    if [ -z "${STPORT}" ]; then STPORT=443; fi
+    if ! [ "${STPORT}" -eq "${STPORT}" ] 2>/dev/null; then
+        >&2 echo "Stream port number must be numeric";
+        exit 1;
+    fi
+
     # Attach the stream configuration to the tail of nginx.conf
-    cat ${STPL} >> /etc/nginx/nginx.conf
+    cat ${STREAM_TPL} >> /etc/nginx/nginx.conf
     for stmap in "${STMAP[@]}"
     do
         options=(`echo $stmap |tr ',' ' '`)
@@ -88,17 +112,26 @@ if [ -n "${STPORT}" ]; then
                     ;;
             esac
         done
+        # Named the upstream as yahoo_com for SNI yahoo.com
         upsname=`echo $sni|sed 's/\./_/g'`
-        echo "        $sni $upsname;"       >>/tmp/map.conf
-        echo "    upstream $upsname {"      >>/tmp/ups.conf
-        echo "        server $upstream;"    >>/tmp/ups.conf
-        echo "    }"                        >>/tmp/ups.conf
+        echo "        $sni $upsname;"       >>/tmp/stmap.conf
+        echo "    upstream $upsname {"      >>/tmp/stups.conf
+        echo "        server $upstream;"    >>/tmp/stups.conf
+        echo "    }"                        >>/tmp/stups.conf
     done
-    # Add map.conf down to #MAPSTUB tag
-    sed -i '/#XMAP-TAG/r /tmp/map.conf' /etc/nginx/nginx.conf
-    # Add ups.conf down to #UPSSTUB tag
-    sed -i '/#XUPSTREAM-TAG/r /tmp/ups.conf' /etc/nginx/nginx.conf
+
+    # Add map.conf down to #XMAP_TAG tag
+    sed -i '/#XMAP_TAG/r /tmp/stmap.conf' /etc/nginx/nginx.conf
+    # Add ups.conf down to #XUPSTREAM_TAG tag
+    sed -i '/#XUPSTREAM_TAG/r /tmp/stups.conf' /etc/nginx/nginx.conf
     sed -i "s/STPORT/${STPORT}/g" /etc/nginx/nginx.conf
+    # Add "proxy_protocol=on" down to #STPROXY_PASS_TAG tag
+    if [ -n "${STPROXY_PASS}" ]; then
+        echo "        proxy_protocol on;" >/tmp/stproxy.conf
+        sed -i '/#STPROXY_PASS_TAG/r /tmp/stproxy.conf' /etc/nginx/nginx.conf
+    fi
+    echo "Generated /etc/nginx/nginx.conf ====>"
+    cat /etc/nginx/nginx.conf
 fi
 
 for ngsvr in "${NGSVR[@]}"
@@ -119,6 +152,9 @@ do
                 domain="${kv[1]}"
                 DOMAIN+=("${kv[1]}")
                 ;;
+            proxy_acpt)
+                NGPROTOCOL="proxy_protocol"
+                ;;
         esac
     done
 
@@ -137,12 +173,21 @@ do
 
     ESC_CERTFILE=$(printf '%s\n' "${fullchain}" | sed -e 's/[]\/$*.^[]/\\&/g')
     ESC_PRVKEYFILE=$(printf '%s\n' "${prvkey}" | sed -e 's/[]\/$*.^[]/\\&/g')
-    cat ${TPL} \
+    cat "${SITE_TPL}" \
         | sed "s/CERTFILE/${ESC_CERTFILE}/g" \
         | sed "s/PRVKEYFILE/${ESC_PRVKEYFILE}/g" \
         | sed "s/NGDOMAIN/${domain}/g" \
         | sed "s/NGPORT/${port}/g" \
+        | sed "s/NGPROTOCOL/${NGPROTOCOL}/g" \
         >"${domain}.conf"
+    # Applying proxy log format instead of main format when --ng-server proxy_pass was set
+    if [ -n "${NGPROTOCOL}" ]; then
+        sed -i '/access_log/s/main/proxy/' "${domain}.conf"
+        sed -i 's/remote_addr/proxy_protocol_addr/g' "${domain}.conf"
+        sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${domain}.conf"
+    fi
+    echo "Generated /etc/nginx/conf.d/${domain}.conf ====>"
+    cat /etc/nginx/conf.d/${domain}.conf
 done
 
 for ngproxy in "${NGPROXY[@]}"
@@ -184,19 +229,27 @@ do
         # Add tpl file content down to #LOCATION tag
         case "${xnetwork}" in
             ws|websocket)
-                sed -i '/#XLOCATION-TAG/r nginx-ws.tpl' ${domain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-ws.tpl' ${domain}.conf
                 ;;
             grpc)
-                sed -i '/#XLOCATION-TAG/r nginx-grpc.tpl' ${domain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-grpc.tpl' ${domain}.conf
                 ;;
             splt|proxy)
-                sed -i '/#XLOCATION-TAG/r nginx-proxy.tpl' ${domain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-proxy.tpl' ${domain}.conf
                 ;;
         esac
         ESC_LOCATION=$(printf '%s\n' "${xlocation}" | sed -e 's/[]\/$*.^[]/\\&/g')
         sed -i "s/HOST/${xhost}/g" ${domain}.conf
         sed -i "s/PORT/${xport}/g" ${domain}.conf
         sed -i "s/WEBPATH/${ESC_LOCATION}/g" ${domain}.conf
+        # Applying proxy log format instead of main format when --ng-server proxy_pass was set
+        if [ -n "${NGPROTOCOL}" ]; then
+            sed -i '/access_log/s/main/proxy/' "${domain}.conf"
+            sed -i 's/remote_addr/proxy_protocol_addr/g' "${domain}.conf"
+            sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${domain}.conf"
+        fi
+        echo "Generated /etc/nginx/conf.d/${domain}.conf ====>"
+        cat /etc/nginx/conf.d/${domain}.conf
     done
 done
 exit 0

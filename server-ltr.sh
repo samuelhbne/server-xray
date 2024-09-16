@@ -4,7 +4,7 @@ DIR=`dirname $0`
 
 usage() {
     echo "VLESS-TCP-REALITY server builder"
-    echo "Usage: server-ltr <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,[xtls],<d=dest.com>,[pub=xx,prv=yy,shortId=zz],<u=id0>,<u=id1>..."
+    echo "Usage: server-ltr <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,[xtls],[proxy_acpt],<d=dest.com>,[pub=xx,prv=yy,shortId=zz],<u=id0>,<u=id1>..."
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -26,6 +26,9 @@ do
             ;;
         p|port)
             port="${kv[1]}"
+            ;;
+        proxy_acpt)
+            acceptProxyProtocol=true
             ;;
         shortId)
             shortIds+=("${kv[1]}")
@@ -105,6 +108,13 @@ for fb in "${fallback[@]}"
 do
     cat $XCONF |${DIR}/fallback.sh -p $port -f ${fb} | sponge $XCONF
 done
+
+# StreamSettings
+if [ -n "${acceptProxyProtocol}" ]; then
+    cat $XCONF |jq --arg port "${port}" \
+    '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"sockopt":{"acceptProxyProtocol":true}} ' \
+    |sponge $XCONF
+fi
 
 # Network settings
 cat $XCONF |jq --arg port "${port}" \

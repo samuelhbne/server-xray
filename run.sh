@@ -12,10 +12,10 @@ usage() {
     echo "    --lgt  <VLESS-GRPC-TLS option>        p=13443,u=id1,u=id2...,s=svcname,d=domain.com"
     echo "    --lsp  <VLESS-SPLT-PLN option>        p=14443,u=id1,u=id2...,w=/webpath"
     echo "    --lst  <VLESS-SPLT-TLS option>        p=16443,u=id1,u=id2...,w=/webpath,d=domain.com"
-    echo "    --ltr  <VLESS-TCP-RLTY option>        p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[xtls]"
-    echo "    --ltrx <VLESS-TCP-RLTY-XTLS option>   p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab]"
-    echo "    --ltt  <VLESS-TCP-TLS option>         p=18443,u=id1,u=id2...,d=domain.com,[xtls]"
-    echo "    --lttx <VLESS-TCP-TLS-XTLS option>    p=18443,u=id1,u=id2...,d=domain.com"
+    echo "    --ltr  <VLESS-TCP-RLTY option>        p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[proxy_acpt],[xtls]"
+    echo "    --ltrx <VLESS-TCP-RLTY-XTLS option>   p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[proxy_acpt]"
+    echo "    --ltt  <VLESS-TCP-TLS option>         p=18443,u=id1,u=id2...,d=domain.com,[proxy_acpt],[xtls]"
+    echo "    --lttx <VLESS-TCP-TLS-XTLS option>    p=18443,u=id1,u=id2...,d=domain.com,[proxy_acpt]"
     echo "    --lwp  <VLESS-WS-PLN option>          p=19443,u=id1,u=id2...,w=/wskpath"
     echo "    --lwt  <VLESS-WS-TLS option>          p=22443,u=id1,u=id2...,w=/wskpath,d=domain.com"
     echo "    --mtt  <VMESS-TCP-TLS option>         p=23443,u=id1,u=id2...,d=domain.com"
@@ -24,9 +24,9 @@ usage() {
     echo "    --ttt  <TROJAN-TCP-TLS option>        p=26443,u=pw1,u=pw2...,d=domain.com"
     echo "    --twp  <TROJAN-WS-PLN option>         p=27443,u=pw1,u=pw2...,w=/wskpath"
     echo "    --twt  <TROJAN-WS-TLS option>         p=28443,u=pw1,u=pw2...,w=/wskpath,d=domain.com"
-    echo "    --ng-server <nginx-server-options>    p=8443,d=domain0.com,d=domain1.com..."
+    echo "    --ng-server <nginx-server-options>    p=8443,d=domain0.com,d=domain1.com...,[proxy_acpt]"
     echo "    --ng-proxy  <nginx-proxy-options>     d=domain0.com,d=domain1.com,p=port-backend,l=location,n=ws|grpc|splt"
-    echo "    --st-port   <stream-port-number>      443"
+    echo "    --st-server <stream-port-number>      [p=443],[proxy_pass]"
     echo "    --st-map    <stream-map-options>      sni=domain.com,ups=127.0.0.1:8443"
     echo "    --domain-block <domain-rule>          Add a domain rule for routing-server block, like geosite:category-ads-all"
     echo "    --ip-block  <ip-rule>                 Add a ip-addr rule for routing block, like geoip:private"
@@ -42,7 +42,7 @@ usage() {
 
 Jrules='{"rules":[]}'
 
-TEMP=`getopt -o u:k:r:c:j:di --long lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-port:,st-map:,json:,stdin,debug -n "$0" -- $@`
+TEMP=`getopt -o u:k:r:c:j:di --long lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug -n "$0" -- $@`
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -114,8 +114,8 @@ while true ; do
             NGPROXY+=("$2")
             shift 2
             ;;
-        --st-port)
-            STPORT="$2"
+        --st-server)
+            STSVR="$2"
             shift 2
             ;;
         --st-map)
@@ -191,8 +191,8 @@ if [ -z "${SVCMD}" ]; then
 fi
 
 # Start Nginx if necessary
-if [ -n "${STPORT}" ]; then
-    NGOPT="--st-port ${STPORT}"
+if [ -n "${STSVR}" ]; then
+    NGOPT="--st-server ${STSVR}"
     for mapopt in "${STMAP[@]}"
     do
         NGOPT="${NGOPT} --st-map $mapopt"

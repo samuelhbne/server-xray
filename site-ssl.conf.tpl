@@ -1,7 +1,7 @@
 server {
     listen                  NGPORT quic;
-    listen                  NGPORT ssl;
-    listen                  [::]:NGPORT ssl;
+    listen                  NGPORT ssl NGPROTOCOL;
+    listen                  [::]:NGPORT ssl NGPROTOCOL;
     http2                   on;
     server_name             NGDOMAIN;
     ssl_certificate         CERTFILE;
@@ -15,9 +15,11 @@ server {
     client_header_timeout   1071906480m;
     keepalive_timeout       1071906480m;
 
+    access_log  /var/log/nginx/access.log  main;
+
     location / {
         return 404;
     }
 
-    #XLOCATION-TAG
+    #XLOCATION_TAG
 }
