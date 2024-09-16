@@ -89,21 +89,21 @@ while true ; do
             ;;
         --domain-block)
             Jrules=`echo "${Jrules}" | jq --arg blkdomain "$2" \
-            '.rules += [{"type":"field", "outboundTag":"block", "domain":[$blkdomain]}]'`
+            '.rules += [{"type":"field", "outboundTag":"blocked", "domain":[$blkdomain]}]'`
             shift 2
             ;;
         --ip-block)
             Jrules=`echo "${Jrules}" | jq --arg blkip "$2" \
-            '.rules += [{"type":"field", "outboundTag":"block", "ip":[$blkip]}]'`
+            '.rules += [{"type":"field", "outboundTag":"blocked", "ip":[$blkip]}]'`
             shift 2
             ;;
         --cn-block)
             Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:geolocation-cn" \
-            '.rules += [{"type":"field", "outboundTag":"block", "domain":[$igndomain]}]'`
+            '.rules += [{"type":"field", "outboundTag":"blocked", "domain":[$igndomain]}]'`
             Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:cn" \
-            '.rules += [{"type":"field", "outboundTag":"block", "domain":[$igndomain]}]'`
+            '.rules += [{"type":"field", "outboundTag":"blocked", "domain":[$igndomain]}]'`
             Jrules=`echo "${Jrules}" | jq --arg ignip "geoip:cn" \
-            '.rules += [{"type":"field", "outboundTag":"block", "ip":[$ignip]}]'`
+            '.rules += [{"type":"field", "outboundTag":"blocked", "ip":[$ignip]}]'`
             shift 1
             ;;
         --ng-server)
@@ -165,7 +165,7 @@ if [ -n "${CERTDOMAIN}" ]; then
     done
 fi
 
-echo '{"log":{"loglevel":"warning"}, "inbounds":[], "outbounds":[{"protocol":"freedom"}]}' |jq .|sponge $XCONF
+echo '{"log":{"loglevel":"warning"},"inbounds":[],"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"blocked","protocol":"blackhole"}]}' |jq .|sponge $XCONF
 
 xopt="xconf=$XCONF"
 xopt="$xopt,certhome=$CERTHOME"
