@@ -39,6 +39,7 @@ Public key: qAaJnTE_zYWNuXuIdlpIfSt5beveuV4PyBaP76WE7jU
 $ docker run --name server-reality-xtls -p 443:443 -d samuelhbne/server-xray \
 --ltrx p=443,d=yahoo.com,u=myid,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4 \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
+-r mydomain.duckdns.org
 ```
 
 ** NOTE **
@@ -138,10 +139,6 @@ The following command will:
 2. Request TLS certs from Letsencrypt for domain1 and domain2
 3. Create Vless-TCP-TLS-XTLS server on port 443 with the cert of domain1
 4. Create Trojan-TCP-TLS server on port 8443 with the cert of domain2 as fallback
-
-### NOTE 3
-
-Port 80 must be exported for TLS domain ownership verification
 
 ```shell
 $ docker run --name server-xray -p 80:80 -p 443:443 -p 8443:8443 -d samuelhbne/server-xray \
@@ -306,17 +303,53 @@ $ curl -sSx socks5h://127.0.0.1:3080 https://checkip.amazonaws.com
 ...
 ```
 
-### 5. Running server-xray container in debug mode for connection issue diagnosis
-
-The following instruction start server-trojan in debug mode. Output Xray config file and the log to console for connection diagnosis.
+### 5. Serving REALITY server alongside with TLS server via Nginx Stream SNI domain name Mapping
 
 ```shell
-$ docker run --rm -p 80:80 -p 443:443 samuelhbne/server-xray \
+$ docker run --name server-reality-tls -p 443:443 -v /home/ubuntu/cert:/opt/cert -d samuelhbne/server-xray \
+-c /opt/cert --cn-block --debug -u u=id0,u=id1 \
+--ltrx proxy_acpt,p=10443,d=yahoo.com,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4 \
+--st-map sni=yahoo.com,ups=127.0.0.1:10443 \
+--lgp p=11443,s=grpc0 \
+--ng-proxy p=11443,l=/grpc0,n=grpc \
+--lwp p=12443,w=/ws0 \
+--ng-proxy p=12443,w=/ws0,n=ws \
+--ng-server proxy_acpt,p=8443,d=mydomain.duckdns.org \
+--st-map sni=mydomain.duckdns.org,ups=127.0.0.1:8443 \
+--st-server proxy_pass,p=443 \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
---mwt d=mydomain.duckdns.org,u=myid,w=/websocket,f=microsoft.com:80 \
--r mydomain.duckdns.org --debug
-...
+-r mydomain.duckdns.org
 ```
+
+-c /opt/cert --cn-block --debug -u u=id0,u=id1  
+Save Letsencrypt certs in /opt/cert; Block all websites located in China; Set log level debug; Add uid id0, id1 for all services created below.
+
+--ltrx proxy_acpt,p=10443,d=yahoo.com,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4  
+Create a Vless-TCP-Reality-Xtls-vision service on port 10443 with yahoo.com as fake destinaition. Accept proxy-protocol. Which is important for logging correct client address if necessary.
+
+--st-map sni=yahoo.com,ups=127.0.0.1:10443  
+Create a Nginx Stream mapping entry for the LTRX service we just created on port 10443. This entry will only be matched when clients request yahoo.com as destination SNI domain name.
+
+--lgp p=11443,s=grpc0  
+Create a Vless-gRPC-Plain service on port 11443 with gRPC name grpc0
+
+--ng-proxy p=11443,l=/grpc0,n=grpc  
+Create a Nginx proxy location on /grpc0 for the LGP service we just created on port 11443, network type is gRPC.
+
+--lwp p=12443,w=/ws0  
+Create a Vless-WebSocket-Plain service on port 12443 with websocket path /ws0
+
+--ng-proxy p=12443,w=/ws0,n=ws  
+Create a Nginx proxy location on /ws0 for the LWP service we just created on port 12443, network type is WebSocket.
+
+--ng-server proxy_acpt,p=8443,d=mydomain.duckdns.org  
+Create a Nginx TLS front server on port 8443, with domain name mydomain.duckdns.org. Contents all proxy locations we set above.
+
+--st-map sni=mydomain.duckdns.org,ups=127.0.0.1:8443  
+Create a Nginx Stream mapping entry for the Nginx TLS front server we just created on port 8443. This entry will only be matched when clients request mydomain.duckdns.org as destination SNI domain name. TIP: You can set default as the sni to match all other domain names except yahoo.com, which will be matched and directed to the LTRX services we set above.
+
+--st-server proxy_pass,p=443  
+Create a Nginx Stream Server on master port 443, directs all requests based on the SNI in requests to upstream map entries we created above with Proxy Protocol. Which is important for logging correct client address if necessary.
 
 ## Build server-xray docker image from source
 
