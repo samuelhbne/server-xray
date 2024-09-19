@@ -1,6 +1,6 @@
 # server-xray
 
-[Xray](https://github.com/XTLS/Xray-core) is a low detectable VPN. server-xray is a Xray server container that runs Xray with config file generated from command line options directly hence remove the necessity of Xray config modification.
+[Xray-Core](https://github.com/XTLS/Xray-core) is a low detectable VPN. server-xray is a Xray server container that runs Xray with config file generated from command line options directly hence remove the necessity of Xray config modification.
 
 Please have a look over the sibling project [proxy-xray](https://github.com/samuelhbne/proxy-xray) if you'd like to set a Xray client.
 
@@ -35,7 +35,7 @@ $ docker run --rm -it --entrypoint /usr/local/bin/xray samuelhbne/server-xray x2
 Private key: OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4
 Public key: qAaJnTE_zYWNuXuIdlpIfSt5beveuV4PyBaP76WE7jU
 
-# Create a new VLESS-TCP-REALITY-XTLS server with the private key. Apply yahoo.com as the fake Destination
+# Create a new VLESS-TCP-REALITY-XTLS server with the private key generated above. Apply yahoo.com as the fake Destination
 $ docker run --name server-reality-xtls -p 443:443 -d samuelhbne/server-xray \
 --ltrx p=443,d=yahoo.com,u=myid,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4 \
 -k https://duckdns.org/update/mydomain/c9711c65-db21-4f8c-a790-2c32c93bde8c \
@@ -92,10 +92,10 @@ server-xray <server-options>
     --lgt  <VLESS-GRPC-TLS option>        p=13443,u=id1,u=id2...,s=svcname,d=domain.com
     --lsp  <VLESS-SPLT-PLN option>        p=14443,u=id1,u=id2...,w=/webpath
     --lst  <VLESS-SPLT-TLS option>        p=16443,u=id1,u=id2...,w=/webpath,d=domain.com
-    --ltr  <VLESS-TCP-RLTY option>        p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[xtls]
-    --ltrx <VLESS-TCP-RLTY-XTLS option>   p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab]
-    --ltt  <VLESS-TCP-TLS option>         p=18443,u=id1,u=id2...,d=domain.com,[xtls]
-    --lttx <VLESS-TCP-TLS-XTLS option>    p=18443,u=id1,u=id2...,d=domain.com
+    --ltr  <VLESS-TCP-RLTY option>        p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[proxy_acpt],[xtls]
+    --ltrx <VLESS-TCP-RLTY-XTLS option>   p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[proxy_acpt]
+    --ltt  <VLESS-TCP-TLS option>         p=18443,u=id1,u=id2...,d=domain.com,[proxy_acpt],[xtls]
+    --lttx <VLESS-TCP-TLS-XTLS option>    p=18443,u=id1,u=id2...,d=domain.com,[proxy_acpt]
     --lwp  <VLESS-WS-PLN option>          p=19443,u=id1,u=id2...,w=/wskpath
     --lwt  <VLESS-WS-TLS option>          p=22443,u=id1,u=id2...,w=/wskpath,d=domain.com
     --mtt  <VMESS-TCP-TLS option>         p=23443,u=id1,u=id2...,d=domain.com
@@ -104,9 +104,9 @@ server-xray <server-options>
     --ttt  <TROJAN-TCP-TLS option>        p=26443,u=pw1,u=pw2...,d=domain.com
     --twp  <TROJAN-WS-PLN option>         p=27443,u=pw1,u=pw2...,w=/wskpath
     --twt  <TROJAN-WS-TLS option>         p=28443,u=pw1,u=pw2...,w=/wskpath,d=domain.com
-    --ng-server <nginx-server-options>    p=8443,d=domain0.com,d=domain1.com...
+    --ng-server <nginx-server-options>    p=8443,d=domain0.com,d=domain1.com...,[proxy_acpt]
     --ng-proxy  <nginx-proxy-options>     d=domain0.com,d=domain1.com,p=port-backend,l=location,n=ws|grpc|splt
-    --st-port   <stream-port-number>      443
+    --st-server <stream-port-number>      [p=443],[proxy_pass]
     --st-map    <stream-map-options>      sni=domain.com,ups=127.0.0.1:8443
     --domain-block <domain-rule>          Add a domain rule for routing-server block, like geosite:category-ads-all
     --ip-block  <ip-rule>                 Add a ip-addr rule for routing block, like geoip:private
@@ -321,34 +321,34 @@ $ docker run --name server-reality-tls -p 443:443 -v /home/ubuntu/cert:/opt/cert
 -r mydomain.duckdns.org
 ```
 
-#### -c /opt/cert --cn-block --debug -u u=id0,u=id1  
-Save Letsencrypt certs in /opt/cert; Block all websites located in China; Set log level debug; Add uid id0, id1 for all services created below.
+##### -c /opt/cert --cn-block --debug -u u=id0,u=id1  
+Save Letsencrypt certs in /opt/cert; Block all websites located in China; Set log level debug; Add users id0, id1 for all services created below.
 
-#### --ltrx proxy_acpt,p=10443,d=yahoo.com,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4  
+##### --ltrx proxy_acpt,p=10443,d=yahoo.com,shortId=abcd,prv=OGgyKdxoCbtunsvQp4UX7eos7BInETDezsuEHRF-AT4  
 Create a Vless-TCP-Reality-Xtls-vision service on port 10443 with yahoo.com as fake destinaition. Accept proxy-protocol. Which is important for logging correct client address if necessary.
 
-#### --st-map sni=yahoo.com,ups=127.0.0.1:10443  
+##### --st-map sni=yahoo.com,ups=127.0.0.1:10443  
 Create a Nginx Stream mapping entry for the LTRX service we just created on port 10443. This entry will only be matched when clients request yahoo.com as destination SNI domain name.
 
-#### --lgp p=11443,s=grpc0  
+##### --lgp p=11443,s=grpc0  
 Create a Vless-gRPC-Plain service on port 11443 with gRPC name grpc0
 
-#### --ng-proxy p=11443,l=/grpc0,n=grpc  
+##### --ng-proxy p=11443,l=/grpc0,n=grpc  
 Create a Nginx proxy location on /grpc0 for the LGP service we just created on port 11443, network type is gRPC.
 
-#### --lwp p=12443,w=/ws0  
+##### --lwp p=12443,w=/ws0  
 Create a Vless-WebSocket-Plain service on port 12443 with websocket path /ws0
 
-#### --ng-proxy p=12443,w=/ws0,n=ws  
+##### --ng-proxy p=12443,w=/ws0,n=ws  
 Create a Nginx proxy location on /ws0 for the LWP service we just created on port 12443, network type is WebSocket.
 
-#### --ng-server proxy_acpt,p=8443,d=mydomain.duckdns.org  
-Create a Nginx TLS front server on port 8443, with domain name mydomain.duckdns.org. Contents all proxy locations we set above.
+##### --ng-server proxy_acpt,p=8443,d=mydomain.duckdns.org  
+Create a Nginx TLS front server on port 8443, with domain name mydomain.duckdns.org. Contents all proxy locations we set above. Accept proxy-protocol. Which is important for logging correct client address if necessary.
 
-#### --st-map sni=mydomain.duckdns.org,ups=127.0.0.1:8443  
+##### --st-map sni=mydomain.duckdns.org,ups=127.0.0.1:8443  
 Create a Nginx Stream mapping entry for the Nginx TLS front server we just created on port 8443. This entry will only be matched when clients request mydomain.duckdns.org as destination SNI domain name. TIP: You can set default as the sni to match all other domain names except yahoo.com, which will be matched and directed to the LTRX services we set above.
 
-#### --st-server proxy_pass,p=443  
+##### --st-server proxy_pass,p=443  
 Create a Nginx Stream Server on master port 443, directs all requests based on the SNI in requests to upstream map entries we created above with Proxy Protocol. Which is important for logging correct client address if necessary.
 
 ## Build server-xray docker image from source
@@ -375,4 +375,4 @@ docker buildx build --platform=linux/amd64 --output type=docker -t samuelhbne/se
 
 ## Credits
 
-Thanks to [RPRX](https://github.com/RPRX) for the [Xray](https://github.com/XTLS/Xray-core) project.
+Thanks to [RPRX](https://github.com/RPRX) for the [Xray-Core](https://github.com/XTLS/Xray-core) project.
