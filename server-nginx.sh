@@ -72,7 +72,7 @@ sed -i '/\#STREAM_TAG/q' /etc/nginx/nginx.conf
 # Remove #STREAM_TAG tag
 sed -i '/\#STREAM_TAG/d' /etc/nginx/nginx.conf
 # Remove temp files generated previously.
-rm /tmp/stmap.conf; rm /tmp/stups.conf; rm /tmp/stproxy.conf
+rm -rf /tmp/stmap.conf; rm -rf /tmp/stups.conf; rm -rf /tmp/stproxy.conf
 
 if [ -n "${STSVR}" ]; then
 options=(`echo $STSVR |tr ',' ' '`)
