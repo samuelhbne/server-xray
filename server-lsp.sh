@@ -58,7 +58,7 @@ fi
 if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
 # inbound frame
-inbound=`jq -nc --arg port "${port}" '{"port":$port,"protocol":"vless","settings":{"decryption":"none"}}'`
+inbound=`jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"vless","settings":{"decryption":"none"}}'`
 
 # User settings
 for user in "${xuser[@]}"
@@ -75,14 +75,14 @@ done
 
 # StreamSettings
 if [ -n "${acceptProxyProtocol}" ]; then
-    inbound=`echo $inbound| jq -c '.settings.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
+    inbound=`echo $inbound| jq -c '.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
 fi
 
 # Network settings
-inbound=`echo $inbound| jq -c --arg webpath "${webpath}" '.settings.streamSettings += {"network":"splithttp","splithttpSettings":{"path":$webpath}}'`
+inbound=`echo $inbound| jq -c --arg webpath "${webpath}" '.streamSettings += {"network":"splithttp","splithttpSettings":{"path":$webpath}}'`
 
 # Security settings
-inbound=`echo $inbound| jq -c '.settings.streamSettings += {"security":"none"}'`
+inbound=`echo $inbound| jq -c '.streamSettings += {"security":"none"}'`
 
 # Fallback settings
 for fb in "${fallback[@]}"

@@ -76,7 +76,7 @@ fi
 if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
 # inbound frame
-inbound=`jq -nc --arg port "${port}" '{"port":$port,"protocol":"vless","settings":{"decryption":"none"}}'`
+inbound=`jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"vless","settings":{"decryption":"none"}}'`
 
 # User settings
 for user in "${xuser[@]}"
@@ -93,28 +93,28 @@ done
 
 # StreamSettings
 if [ -n "${acceptProxyProtocol}" ]; then
-    inbound=`echo $inbound| jq -c '.settings.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
+    inbound=`echo $inbound| jq -c '.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
 fi
 
 # Network settings
-inbound=`echo $inbound| jq -c '.settings.streamSettings += {"network":"tcp"}'`
+inbound=`echo $inbound| jq -c '.streamSettings += {"network":"tcp"}'`
 
 # Security settings
-inbound=`echo $inbound| jq -c '.settings.streamSettings += {"security":"reality"}'`
+inbound=`echo $inbound| jq -c '.streamSettings += {"security":"reality"}'`
 
 # Reality settings
 inbound=`echo $inbound| jq -c --arg dest "${dest}" --arg pubkey "${pubkey}" --arg prvkey "${prvkey}" \
-'.settings.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}'`
+'.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}'`
 
 # serverNames settings
 if [ -n "${serverNames}" ]; then
     JserverNames=`printf '%s\n' "${serverNames[@]}"|jq -R|jq -sc`
-    inbound=`echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.settings.streamSettings.realitySettings.serverNames += $JserverNames'`
+    inbound=`echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.streamSettings.realitySettings.serverNames += $JserverNames'`
 fi
 
 # shortIds settings
 JshortIds=`printf '%s\n' "${shortIds[@]}"|jq -R|jq -sc`
-inbound=`echo $inbound| jq -c --argjson JshortIds "${JshortIds}" '.settings.streamSettings.realitySettings.shortIds += $JshortIds'`
+inbound=`echo $inbound| jq -c --argjson JshortIds "${JshortIds}" '.streamSettings.realitySettings.shortIds += $JshortIds'`
 
 # Fallback settings
 for fb in "${fallback[@]}"
