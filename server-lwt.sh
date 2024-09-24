@@ -3,8 +3,10 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-WS-TLS server builder"
-    echo "Usage: server-lwt <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,<d=domain.com>,<w=wskpath>,<u=id0>,<u=id1>..."
+    >&2 echo "VLESS-WS-TLS server builder"
+    >&2 echo "Usage: server-lwt <w=wskpath>,<c=certhome-dir>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path],[xtls]"
+    >&2 echo "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
+    >&2 echo "User format: user|u=<uid>[:level:email]"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -27,14 +29,14 @@ do
         p|port)
             port="${kv[1]}"
             ;;
+        proxy_acpt)
+            acceptProxyProtocol=true
+            ;;
         u|user)
             xuser+=("${kv[1]}")
             ;;
         w|wpath)
             wspath="${kv[1]}"
-            ;;
-        x|xconf)
-            xconf="${kv[1]}"
             ;;
         xtls)
             flow="xtls-rprx-vision"
@@ -43,92 +45,78 @@ do
 done
 
 if [ -z "${certhome}" ]; then
-    echo "Error: certhome undefined."
-    usage
-    exit 1
+    >&2 echo -e "Error: Certhome undefined.\n"
+    usage; exit 1
 fi
 
 if [ -z "${domain}" ]; then
-    echo "Error: domain undefined."
-    usage
-    exit 1
-fi
-
-if [ -n "${flow}" ]; then
-    flowopt="-f ${flow}"
+    >&2 echo -e "Error: Domain undefined.\n"
+    usage; exit 1
 fi
 
 if [ -z "${port}" ]; then
-    echo "Error: port undefined."
-    usage
-    exit 1 ;
+    >&2 echo -e "Error: Port undefined.\n"
+    usage; exit 1 ;
 fi
 
 if [ -z "${wspath}" ]; then
-    echo "Error: wspath undefined."
-    usage
-    exit 1
+    >&2 echo -e "Error: wspath undefined.\n"
+    usage; exit 1
 fi
 
 if [ -z "${xuser}" ]; then
-    echo "Error: user undefined."
-    usage
-    exit 1
+    >&2 echo -e "Error: User undefined.\n"
+    usage; exit 1
 fi
 
-if [ -z "${xconf}" ]; then
-    echo "Error: xconf undefined."
-    usage
-    exit 1
-fi
+fullchain="${certhome}/${domain}/fullchain.cer"
+prvkey="${certhome}/${domain}/${domain}.key"
+if [ ! -f "${fullchain}" ]; then >&2 echo "Warning, Fullchain not found: ${fullchain}"; fi
+if [ ! -f "${prvkey}" ]; then >&2 echo "Warning, Private key not found: ${prvkey}"; fi
 
-if [ -f "${certhome}/${domain}/fullchain.cer" ] && [ -f "${certhome}/${domain}/${domain}.key" ]; then
-    fullchain="${certhome}/${domain}/fullchain.cer"
-    prvkey="${certhome}/${domain}/${domain}.key"
-fi
+if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
-if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
-    echo "TLS cert missing?"
-    echo "Abort."
-    exit 2
-fi
-
-if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
-
-XCONF=$xconf
-# Remove existing port number if existing.
-cat $XCONF |jq --arg port "${port}" 'del( .inbounds[] | select(.port == ($port|tonumber)) )' |sponge $XCONF
-
-# Add inbound element
-cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
-cat $XCONF |jq --arg port "${port}" '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.decryption ) += "none" '  |sponge $XCONF
+# inbound frame
+inbound=`jq -nc --arg port "${port}" '{"port":$port,"protocol":"vless","settings":{"decryption":"none"}}'`
 
 # User settings
-for xu in "${xuser[@]}"
+for user in "${xuser[@]}"
 do
-    cat $XCONF | ${DIR}/adduser.sh -p $port -u ${xu} -c lwt.$domain $flowopt | sponge $XCONF
+    IFS=':'; uopt=(${user}); uopt=(${uopt[@]})
+    uid="${uopt[0]}"; level="${uopt[1]}"; email="${uopt[2]}"
+    unset IFS
+    if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
+    if [ -z "${level}" ]; then level=0; fi
+    if [ -z "${email}" ]; then email="${uid}@lwt.$domain"; fi
+    inbound=`echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
+    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]'`
 done
+
+# StreamSettings
+if [ -n "${acceptProxyProtocol}" ]; then
+    inbound=`echo $inbound| jq -c '.settings.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
+fi
+
+# Network settings
+inbound=`echo $inbound| jq -c --arg wspath "${wspath}" '.settings.streamSettings += {"network":"ws","wsSettings":{"path":$wspath}}'`
+
+# Security settings
+inbound=`echo $inbound| jq -c '.settings.streamSettings += {"security":"tls"}'`
+inbound=`echo $inbound| jq -c --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
+'.settings.streamSettings.tlsSettings += {"certificates":[{"certificateFile":$fullchain,"keyFile":$prvkey}]}'`
 
 # Fallback settings
 for fb in "${fallback[@]}"
 do
-    cat $XCONF |${DIR}/fallback.sh -p $port -f ${fb} | sponge $XCONF
+    IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
+    fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
+    unset IFS
+    if [ -z "${fport}" ]; then >&2 echo "Incorrect fallback format: ${fallback}"; usage; exit 1; fi
+    if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
+    fdest="$fhost:$fport"
+    Jfb=`jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}'`
+    inbound=`echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]'`
 done
 
-# Network settings
-cat $XCONF |jq --arg port "${port}" --arg wspath "${wspath}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"ws","wsSettings":{"path":$wspath}}' \
-|sponge $XCONF
-
-# TLS settings
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"security":"tls"} ' \
-|sponge $XCONF
-
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"tlsSettings":{}} ' \
-|sponge $XCONF
-
-cat $XCONF |jq --arg port "${port}" --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings.tlsSettings ) += {"certificates":[{"certificateFile":$fullchain, "keyFile":$prvkey}]} ' \
-|sponge $XCONF
+echo $inbound
+exit 0

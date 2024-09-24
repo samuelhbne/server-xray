@@ -56,9 +56,6 @@ ADD server-ttt.sh   /server-ttt.sh
 ADD server-twt.sh   /server-twt.sh
 
 ADD server-nginx.sh /server-nginx.sh
-ADD fallback.sh     /fallback.sh
-ADD addusertj.sh    /addusertj.sh
-ADD adduser.sh      /adduser.sh
 
 ADD run.sh          /run.sh
 

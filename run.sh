@@ -2,7 +2,7 @@
 
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
-CERTHOME="/root/.acme.sh"
+CERTHOME="/opt/cert"
 XCONF=/tmp/server-xray.json
 
 usage() {
@@ -36,7 +36,7 @@ usage() {
     echo "    -r|--request-domain <domain-name>     Domain name to request for letsencrypt cert"
     echo "    -c|--cert-home <cert-home-dir>        Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
     echo "    -i|--stdin                            Read config from STDIN instead of auto generation"
-    echo "    -j|--json                             Json snippet to merge into the config. Say '{"log":{"loglevel":"info"}'"
+    echo "    -j|--json                             Json snippet to merge into the config. Say '{"log":{"loglevel":"info"}}'"
     echo "    -d|--debug                            Start in debug mode with verbose output"
 }
 
@@ -61,7 +61,8 @@ while true ; do
             shift 2
             ;;
         -i|--stdin)
-            STDINCONF=1
+            # Read Xray config from STDIN. Run Xray only.
+            exec /usr/local/bin/xray
             shift 1
             ;;
         -d|--debug)
@@ -77,33 +78,34 @@ while true ; do
             shift 2
             ;;
         --lgp|--lgr|--lgt|--lsp|--lst|--ltr|--ltt|--lwp|--lwt|--mtt|--mwp|--mwt|--ttt|--twp|--twt)
+            # Alias options
             SVC=`echo $1|tr -d '\-\-'`
             SVCMD+=("${DIR}/server-${SVC}.sh $2")
             shift 2
             ;;
-        # Alias options
         --ltrx|--lttx)
+            # Alias options
             SVC=`echo $1|tr -d '\-\-'|tr -d x`
             SVCMD+=("${DIR}/server-${SVC}.sh $2,xtls")
             shift 2
             ;;
         --domain-block)
             Jrules=`echo "${Jrules}" | jq --arg blkdomain "$2" \
-            '.rules += [{"type":"field", "outboundTag":"blocked", "domain":[$blkdomain]}]'`
+            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$blkdomain]}]'`
             shift 2
             ;;
         --ip-block)
             Jrules=`echo "${Jrules}" | jq --arg blkip "$2" \
-            '.rules += [{"type":"field", "outboundTag":"blocked", "ip":[$blkip]}]'`
+            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$blkip]}]'`
             shift 2
             ;;
         --cn-block)
             Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:geolocation-cn" \
-            '.rules += [{"type":"field", "outboundTag":"blocked", "domain":[$igndomain]}]'`
+            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]'`
             Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:cn" \
-            '.rules += [{"type":"field", "outboundTag":"blocked", "domain":[$igndomain]}]'`
+            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]'`
             Jrules=`echo "${Jrules}" | jq --arg ignip "geoip:cn" \
-            '.rules += [{"type":"field", "outboundTag":"blocked", "ip":[$ignip]}]'`
+            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$ignip]}]'`
             shift 1
             ;;
         --ng-server)
@@ -165,29 +167,12 @@ if [ -n "${CERTDOMAIN}" ]; then
     done
 fi
 
-echo '{"log":{"loglevel":"warning"},"inbounds":[],"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"blocked","protocol":"blackhole"}]}' |jq .|sponge $XCONF
-
-xopt="xconf=$XCONF"
-xopt="$xopt,certhome=$CERTHOME"
-for uopt in "${UOPT[@]}"
-do
-    xopt="$xopt,$uopt"
-done
-
-# Add routing config
-Jrouting='{"routing": {"domainStrategy":"AsIs"}}'
-Jrouting=`echo "${Jrouting}" |jq --argjson jrules "${Jrules}" '.routing += $jrules'`
-cat $XCONF| jq --argjson jrouting "${Jrouting}" '. += $jrouting' | sponge $XCONF
-
-# Run Xray only. Read Xray config from STDIN
-if [ "${STDINCONF}" = "1" ]; then
-    exec /usr/local/bin/xray
-fi
+xopt="certhome=$CERTHOME"
+for uopt in "${UOPT[@]}"; do xopt="$xopt,$uopt"; done
 
 if [ -z "${SVCMD}" ]; then
-    echo "No Xray service creation found. Quit."
-    usage;
-    exit 1
+    echo -e "No Xray service creation found. Quit.\n"
+    usage; exit 1
 fi
 
 # Start Nginx if necessary
@@ -214,46 +199,48 @@ if [ -n "${NGOPT}" ]; then
     ngcmd="${DIR}/server-nginx.sh $NGOPT"
     $ngcmd
     ret=$?; if [ $ret != 0 ]; then
-        echo ""
-        echo "Nginx config generation failed from the following cmd:\n$ngcmd";
-        echo "Please check log for details"
+        echo -e "\nNginx config generation failed from the following cmd:\n$ngcmd";
+        echo -e "Please check log for details.\n"
         exit $ret;
     fi
     killall nginx
     nginx;
 fi
 
+# Add root config
+Jroot='{"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"blocked","protocol":"blackhole"}]}'
+
+# Add routing config
+Jrouting='{"routing":{"domainStrategy":"AsIs"}}'
+Jrouting=`echo $Jrouting |jq --argjson jrules "${Jrules}" '.routing += $jrules'`
+
+Jroot=`echo $Jroot| jq --argjson jrouting "${Jrouting}" '. += $jrouting'`
+
 # Xray service config generation
 for svcmd in "${SVCMD[@]}"
 do
-    svcmd="$svcmd,$xopt"
-    $svcmd
+    Jsvc=`$svcmd,$xopt`
     if [[ $? -ne 0 ]]; then
-        echo
-        echo "Service creation command failed: $svcmd"
+        echo "Service creation command failed: $svcmd,$xopt"
         exit 1
     fi
+    Jroot=`echo $Jroot| jq --argjson Jsvc "${Jsvc}" '.inbounds += [$Jsvc]'`
 done
 
-if [ "${DEBUG}" = "1" ]; then
-    cat $XCONF |jq '.log.loglevel |="debug"' |sponge $XCONF
-    echo
-fi
+if [ -n "${DEBUG}" ]; then loglevel="debug"; else loglevel="warning"; fi
+Jroot=`echo $Jroot| jq --arg loglevel "${loglevel}" '.log.loglevel |= $loglevel'`
 
 if [ -n "${INJECT}" ]; then
     for JSON_IN in "${INJECT[@]}"
     do
-        echo "${JSON_IN}"|jq -ec >/tmp/merge.json
-        if [[ $? -ne 0 ]]; then
-            echo "Invalid json ${JSON_IN}"
-            exit 1
-        fi
-        jq -s '.[0] * .[1]' $XCONF /tmp/merge.json |sponge $XCONF
+        Jmerge=`jq -nc "${JSON_IN}"`
+        if [[ $? -ne 0 ]]; then echo "Invalid json ${JSON_IN}"; exit 1; fi
+        Jroot=`jq -n --argjson Jroot "${Jroot}" --argjson Jmerge "${Jmerge}" '$Jroot + $Jmerge'`
     done
 fi
 
-cat $XCONF
-echo
+jq -n "$Jroot"
+jq -n "$Jroot">$XCONF
 exec /usr/local/bin/xray -c $XCONF
 
 fi

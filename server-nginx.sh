@@ -20,23 +20,23 @@ if [ $? != 0 ] ; then usage; exit 1 ; fi
 eval set -- "$TEMP"
 while true ; do
     case "$1" in
-        # Multiple Nginx domain servers Allowed
         -n|--ng-server)
+            # Multiple Nginx domain servers Allowed
             NGSVR+=("$2")
             shift 2
             ;;
-        # Multiple Nginx proxy locations Allowed
         -x|--ng-proxy)
+            # Multiple Nginx proxy locations Allowed
             NGPROXY+=("$2")
             shift 2
             ;;
-        # Only SINGLE Stream server Allowed
         -s|--st-server)
+            # Only SINGLE Stream server Allowed
             STSVR="$2"
             shift 2
             ;;
-        # Multiple Nginx SNI map items Allowed
         -m|--st-map)
+            # Multiple Nginx SNI map items Allowed
             STMAP+=("$2")
             shift 2
             ;;

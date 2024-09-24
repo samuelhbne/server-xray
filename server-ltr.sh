@@ -3,8 +3,10 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-TCP-REALITY server builder"
-    echo "Usage: server-ltr <x=xray-config-file>,<c=cert-home-dir>,<p=listen-port>,[xtls],[proxy_acpt],<d=dest.com>,[pub=xx,prv=yy,shortId=zz],<u=id0>,<u=id1>..."
+    >&2 echo "VLESS-TCP-REALITY server builder"
+    >&2 echo "Usage: server-ltr <d=dest.com>,<prv=yy>,[pub=xx],[shortId=zz],<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path],[xtls]"
+    >&2 echo "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
+    >&2 echo "User format: user|u=<uid>[:level:email]"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -12,9 +14,6 @@ for option in "${options[@]}"
 do
     kv=(`echo $option |tr '=' ' '`)
     case "${kv[0]}" in
-        c|certhome)
-            certhome="${kv[1]}"
-            ;;
         d|dest)
             dest="${kv[1]}"
             ;;
@@ -30,7 +29,10 @@ do
         proxy_acpt)
             acceptProxyProtocol=true
             ;;
-        shortId)
+        svnm|serverName)
+            serverNames+=("${kv[1]}")
+            ;;
+        sid|shortId)
             shortIds+=("${kv[1]}")
             ;;
         prv|privateKey)
@@ -42,9 +44,6 @@ do
         u|user)
             xuser+=("${kv[1]}")
             ;;
-        x|xconf)
-            xconf="${kv[1]}"
-            ;;
         xtls)
             flow="xtls-rprx-vision"
             ;;
@@ -52,84 +51,83 @@ do
 done
 
 if [ -z "${dest}" ]; then
-    echo "Error: dest undefined."
-    usage
-    exit 1
-fi
-
-if [ -n "${flow}" ]; then
-    flowopt="-f ${flow}"
+    >&2 echo -e "Error: Fake Destination undefined.\n"
+    usage; exit 1
 fi
 
 if [ -z "${port}" ]; then
-    echo "Error: port undefined."
-    usage
-    exit 1 ;
-fi
-
-if [ -z "${xuser}" ]; then
-    echo "Error: user undefined."
-    usage
-    exit 1
-fi
-
-if [ -z "${xconf}" ]; then
-    echo "Error: xconf undefined."
-    usage
-    exit 1
+    >&2 echo -e "Error: Port undefined.\n"
+    usage; exit 1 ;
 fi
 
 if [ -z "${prvkey}" ]; then
-    echo "Warning: PrivateKey undefined, Generated new..."
+    >&2 echo "Warning: PrivateKey undefined, Generated new..."
     kv=(`/usr/local/bin/xray x25519|cut -d ' ' -f3|tr ' '`)
     prvkey="${kv[0]}"
     pubkey="${kv[1]}"
-    echo "PublicKey: $pubkey"
+    >&2 echo "PublicKey: $pubkey"
 fi
 
-if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
+if [ -z "${xuser}" ]; then
+    >&2 echo -e "Error: User undefined.\n"
+    usage; exit 1
+fi
 
-XCONF=$xconf
-# Remove existing port number if existing.
-cat $XCONF |jq --arg port "${port}" 'del( .inbounds[] | select(.port == ($port|tonumber)) )' |sponge $XCONF
+if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
-# Add inbound element
-cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
-cat $XCONF |jq --arg port "${port}" '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.decryption ) += "none" '  |sponge $XCONF
+# inbound frame
+inbound=`jq -nc --arg port "${port}" '{"port":$port,"protocol":"vless","settings":{"decryption":"none"}}'`
 
 # User settings
-for xu in "${xuser[@]}"
+for user in "${xuser[@]}"
 do
-    cat $XCONF | ${DIR}/adduser.sh -p $port -u ${xu} -c ltr.$dest $flowopt | sponge $XCONF
-done
-
-# Fallback settings
-for fb in "${fallback[@]}"
-do
-    cat $XCONF |${DIR}/fallback.sh -p $port -f ${fb} | sponge $XCONF
+    IFS=':'; uopt=(${user}); uopt=(${uopt[@]})
+    uid="${uopt[0]}"; level="${uopt[1]}"; email="${uopt[2]}"
+    unset IFS
+    if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
+    if [ -z "${level}" ]; then level=0; fi
+    if [ -z "${email}" ]; then email="${uid}@ltr.$dest"; fi
+    inbound=`echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
+    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]'`
 done
 
 # StreamSettings
 if [ -n "${acceptProxyProtocol}" ]; then
-    cat $XCONF |jq --arg port "${port}" \
-    '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"sockopt":{"acceptProxyProtocol":true}} ' \
-    |sponge $XCONF
+    inbound=`echo $inbound| jq -c '.settings.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
 fi
 
 # Network settings
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"tcp"} ' \
-|sponge $XCONF
+inbound=`echo $inbound| jq -c '.settings.streamSettings += {"network":"tcp"}'`
+
+# Security settings
+inbound=`echo $inbound| jq -c '.settings.streamSettings += {"security":"reality"}'`
 
 # Reality settings
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"security":"reality"} ' \
-|sponge $XCONF
+inbound=`echo $inbound| jq -c --arg dest "${dest}" --arg pubkey "${pubkey}" --arg prvkey "${prvkey}" \
+'.settings.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}'`
 
-cat $XCONF |jq --arg port "${port}" --arg dest "${dest}" --arg pubkey "${pubkey}" --arg prvkey "${prvkey}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"realitySettings":{"show":true,"dest":"\($dest):443","serverNames":[$dest,""],"privateKey":$prvkey,"publicKey":$pubkey,"shortIds":[""]} } ' \
-|sponge $XCONF
+# serverNames settings
+if [ -n "${serverNames}" ]; then
+    JserverNames=`printf '%s\n' "${serverNames[@]}"|jq -R|jq -sc`
+    inbound=`echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.settings.streamSettings.realitySettings.serverNames += $JserverNames'`
+fi
 
-cat $XCONF |jq '( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings.realitySettings.shortIds ) +=$ARGS.positional' \
---arg port "${port}" --args ${shortIds[@]} \
-|sponge $XCONF
+# shortIds settings
+JshortIds=`printf '%s\n' "${shortIds[@]}"|jq -R|jq -sc`
+inbound=`echo $inbound| jq -c --argjson JshortIds "${JshortIds}" '.settings.streamSettings.realitySettings.shortIds += $JshortIds'`
+
+# Fallback settings
+for fb in "${fallback[@]}"
+do
+    IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
+    fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
+    unset IFS
+    if [ -z "${fport}" ]; then >&2 echo "Incorrect fallback format: ${fallback}"; usage; exit 1; fi
+    if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
+    fdest="$fhost:$fport"
+    Jfb=`jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}'`
+    inbound=`echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]'`
+done
+
+echo $inbound
+exit 0

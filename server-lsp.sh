@@ -3,8 +3,10 @@
 DIR=`dirname $0`
 
 usage() {
-    echo "VLESS-SPLT-PLAIN server builder"
-    echo "Usage: server-lsp <x=xray-config-file>,<p=listen-port>,<w=webpath>,<u=id0>,<u=id1>..."
+    >&2 echo "VLESS-SPLT-PLAIN server builder"
+    >&2 echo "Usage: server-lsp <w=webpath>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path]"
+    >&2 echo "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
+    >&2 echo "User format: user|u=<uid>[:level:email]"
 }
 
 options=(`echo $1 |tr ',' ' '`)
@@ -15,8 +17,14 @@ do
         d|domain)
             domain="${kv[1]}"
             ;;
+        f|fallback)
+            fallback+=("${kv[1]}")
+            ;;
         p|port)
             port="${kv[1]}"
+            ;;
+        proxy_acpt)
+            acceptProxyProtocol=true
             ;;
         u|user)
             xuser+=("${kv[1]}")
@@ -24,58 +32,70 @@ do
         w|wpath)
             webpath="${kv[1]}"
             ;;
-        x|xconf)
-            xconf="${kv[1]}"
-            ;;
     esac
 done
 
+if [ -z "${domain}" ]; then
+    >&2 echo -e "Error: Domain undefined.\n"
+    usage; exit 1
+fi
+
 if [ -z "${port}" ]; then
-    echo "Error: port undefined."
-    usage
-    exit 1 ;
+    >&2 echo -e "Error: Port undefined.\n"
+    usage; exit 1 ;
 fi
 
 if [ -z "${webpath}" ]; then
-    echo "Error: webpath undefined."
-    usage
-    exit 1
+    >&2 echo -e "Error: webpath undefined.\n"
+    usage; exit 1
 fi
 
 if [ -z "${xuser}" ]; then
-    echo "Error: user undefined."
-    usage
-    exit 1
+    >&2 echo -e "Error: User undefined.\n"
+    usage; exit 1
 fi
 
-if [ -z "${xconf}" ]; then
-    echo "Error: xconf undefined."
-    usage
-    exit 1
-fi
+if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
-if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
-
-XCONF=$xconf
-# Remove existing port number if existing.
-cat $XCONF |jq --arg port "${port}" 'del( .inbounds[] | select(.port == ($port|tonumber)) )' |sponge $XCONF
-
-# Add inbound element
-cat $XCONF |jq --arg port "${port}" '.inbounds +=[{"port":($port|tonumber), "protocol":"vless", "settings":{"clients":[]}}]' |sponge $XCONF
-cat $XCONF |jq --arg port "${port}" '( .inbounds[] | select(.port == ($port|tonumber)) | .settings.decryption ) += "none" '  |sponge $XCONF
+# inbound frame
+inbound=`jq -nc --arg port "${port}" '{"port":$port,"protocol":"vless","settings":{"decryption":"none"}}'`
 
 # User settings
-for xu in "${xuser[@]}"
+for user in "${xuser[@]}"
 do
-    cat $XCONF | ${DIR}/adduser.sh -p $port -u ${xu} -c lsp.$domain $flowopt | sponge $XCONF
+    IFS=':'; uopt=(${user}); uopt=(${uopt[@]})
+    uid="${uopt[0]}"; level="${uopt[1]}"; email="${uopt[2]}"
+    unset IFS
+    if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
+    if [ -z "${level}" ]; then level=0; fi
+    if [ -z "${email}" ]; then email="${uid}@lsp.$domain"; fi
+    inbound=`echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
+    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]'`
 done
 
-# Network settings
-cat $XCONF |jq --arg port "${port}" --arg webpath "${webpath}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"network":"splithttp","splithttpSettings":{"path":$webpath}} ' \
-|sponge $XCONF
+# StreamSettings
+if [ -n "${acceptProxyProtocol}" ]; then
+    inbound=`echo $inbound| jq -c '.settings.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
+fi
 
-# Plain settings
-cat $XCONF |jq --arg port "${port}" \
-'( .inbounds[] | select(.port == ($port|tonumber)) | .streamSettings ) += {"security":"none" } ' \
-|sponge $XCONF
+# Network settings
+inbound=`echo $inbound| jq -c --arg webpath "${webpath}" '.settings.streamSettings += {"network":"splithttp","splithttpSettings":{"path":$webpath}}'`
+
+# Security settings
+inbound=`echo $inbound| jq -c '.settings.streamSettings += {"security":"none"}'`
+
+# Fallback settings
+for fb in "${fallback[@]}"
+do
+    IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
+    fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
+    unset IFS
+    if [ -z "${fport}" ]; then >&2 echo "Incorrect fallback format: ${fallback}"; usage; exit 1; fi
+    if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
+    fdest="$fhost:$fport"
+    Jfb=`jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}'`
+    inbound=`echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]'`
+done
+
+echo $inbound
+exit 0
