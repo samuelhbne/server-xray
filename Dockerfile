@@ -26,13 +26,13 @@ RUN cd /root; curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs
 RUN cd /root; ln -s acme.sh-${ACMEVER} acme.sh; mkdir .acme.sh
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/sbin/nginx
 
-COPY site-ssl.conf.tpl  /etc/nginx/conf.d/
+COPY nginx-site.tpl     /etc/nginx/conf.d/
 COPY nginx-stream.tpl   /etc/nginx/conf.d/
 COPY nginx-proxy.tpl    /etc/nginx/conf.d/
 COPY nginx-grpc.tpl     /etc/nginx/conf.d/
 COPY nginx-ws.tpl       /etc/nginx/conf.d/
 
-COPY proxy-log-fmt.tpl  /etc/nginx/conf.d/001-proxy-log-fmt.conf
+COPY proxy-log-fmt.tpl  /etc/nginx/conf.d/000-proxy-log-fmt.conf
 
 ADD server-lgp.sh   /server-lgp.sh
 ADD server-lgr.sh   /server-lgr.sh

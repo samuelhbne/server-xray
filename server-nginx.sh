@@ -2,16 +2,16 @@
 
 DIR=`dirname $0`
 DIR="$(cd $DIR; pwd)"
-SITE_TPL="site-ssl.conf.tpl"
+SITE_TPL="nginx-site.tpl"
 STREAM_TPL="nginx-stream.tpl"
 NGCONF="/etc/nginx/nginx.conf"
 
 usage() {
-    echo "server-nginx --ng-server <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
-    echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws|splt>[,h=127.0.0.1][,d=host-domain]"
-    echo "    --ng-server   <c=cert-home-dir,d=host-domain>[,p=443],[proxy_acpt]"
-    echo "    --st-map      <sni=domain.com,ups=127.0.0.1:8443>"
-    echo "    --st-server   [p=443],[proxy_pass]"
+    >&2 echo "server-nginx --ng-server <c=certhome,d=domain>[,p=443] --ng-proxy <p=xport,l=location,n=grpc|ws|splt>[,h=127.0.0.1]"
+    >&2 echo "    --ng-proxy    <p=port-backend,l=location-path,n=grpc|ws|splt>[,h=127.0.0.1][,d=host-domain]"
+    >&2 echo "    --ng-server   <c=cert-home-dir,d=domain0.com,d=domain1.com>[,p=443],[proxy_acpt]"
+    >&2 echo "    --st-map      <sni=domain.com,ups=127.0.0.1:8443>"
+    >&2 echo "    --st-server   [p=443],[proxy_pass]"
 }
 
 TEMP=`getopt -o m:n:p:s:x: --long ng-server:,ng-proxy:,st-server:,st-map: -n "$0" -- $@`
@@ -45,22 +45,19 @@ while true ; do
             break
             ;;
         *)
-            echo "Unrecogonised opt: $1"
-            usage;
-            exit 1
+            >&2 echo -e "Unrecogonised opt: $1\n"
+            usage; exit 1
             ;;
     esac
 done
 
 if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then
-    echo "No Stream/Server defined. Quit.";
-    usage;
-    exit 1;
+    >&2 echo -e "No Stream/Server defined. Quit.\n";
+    usage; exit 1;
 fi
 
 # Running as root to enable transparent stream.
 # sed -i 's/^user \+nginx;$/user  root;/g' /etc/nginx/nginx.conf
-# mkdir -p /run/nginx/
 
 cd /etc/nginx/conf.d/
 if [ -f /etc/nginx/conf.d/default.conf ]; then
@@ -71,9 +68,8 @@ fi
 sed -i '/\#STREAM_TAG/q' /etc/nginx/nginx.conf
 # Remove #STREAM_TAG tag
 sed -i '/\#STREAM_TAG/d' /etc/nginx/nginx.conf
-# Remove temp files generated previously.
-rm -rf /tmp/stmap.conf; rm -rf /tmp/stups.conf; rm -rf /tmp/stproxy.conf
 
+# Generate Nginx Stream server configuration.
 if [ -n "${STSVR}" ]; then
 options=(`echo $STSVR |tr ',' ' '`)
     for option in "${options[@]}"
@@ -90,12 +86,9 @@ options=(`echo $STSVR |tr ',' ' '`)
     done
 
     if [ -z "${STPORT}" ]; then STPORT=443; fi
-    if ! [ "${STPORT}" -eq "${STPORT}" ] 2>/dev/null; then
-        >&2 echo "Stream port number must be numeric";
-        exit 1;
-    fi
+    if ! [ "${STPORT}" -eq "${STPORT}" ] 2>/dev/null; then >&2 echo "Stream port number must be numeric"; exit 1; fi
 
-    # Attach the stream configuration to the tail of nginx.conf
+    # Attaching the stream configuration template to the tail of nginx.conf
     cat ${STREAM_TPL} >> /etc/nginx/nginx.conf
     for stmap in "${STMAP[@]}"
     do
@@ -112,7 +105,7 @@ options=(`echo $STSVR |tr ',' ' '`)
                     ;;
             esac
         done
-        # Named the upstream as yahoo_com for SNI yahoo.com
+        # Naming the upstream as yahoo_com_jp for SNI yahoo.com.jp
         upsname=`echo $sni|sed 's/\./_/g'`
         echo "        $sni $upsname;"       >>/tmp/stmap.conf
         echo "    upstream $upsname {"      >>/tmp/stups.conf
@@ -120,23 +113,27 @@ options=(`echo $STSVR |tr ',' ' '`)
         echo "    }"                        >>/tmp/stups.conf
     done
 
-    # Add map.conf down to #XMAP_TAG tag
+    # Adding map.conf down to #XMAP_TAG tag
     sed -i '/#XMAP_TAG/r /tmp/stmap.conf' /etc/nginx/nginx.conf
-    # Add ups.conf down to #XUPSTREAM_TAG tag
+    # Adding ups.conf down to #XUPSTREAM_TAG tag
     sed -i '/#XUPSTREAM_TAG/r /tmp/stups.conf' /etc/nginx/nginx.conf
     sed -i "s/STPORT/${STPORT}/g" /etc/nginx/nginx.conf
-    # Add "proxy_protocol=on" down to #STPROXY_PASS_TAG tag
+    # Adding "proxy_protocol=on" down to #STPROXY_PASS_TAG tag
     if [ -n "${STPROXY_PASS}" ]; then
         echo "        proxy_protocol on;" >/tmp/stproxy.conf
         sed -i '/#STPROXY_PASS_TAG/r /tmp/stproxy.conf' /etc/nginx/nginx.conf
     fi
+    rm -rf /tmp/stmap.conf; rm -rf /tmp/stups.conf; rm -rf /tmp/stproxy.conf
     echo "Generated /etc/nginx/nginx.conf ====>"
     cat /etc/nginx/nginx.conf
 fi
 
+# Generating Nginx site server configurations.
 for ngsvr in "${NGSVR[@]}"
 do
-    unset certhome
+    unset certhome NGPROTOCOL
+    # removing site default config file if any. 
+    rm -rf /etc/nginx/conf.d/00_default_*.conf
     options=(`echo $ngsvr |tr ',' ' '`)
     for option in "${options[@]}"
     do
@@ -149,8 +146,7 @@ do
                 port="${kv[1]}"
                 ;;
             d|domain)
-                # Each server serve one domain only
-                svr_domain="${kv[1]}"
+                SITEDOMAINS+=("${kv[1]}")
                 # Add each server domain into full domain list
                 ALLDOMAINS+=("${kv[1]}")
                 ;;
@@ -160,38 +156,47 @@ do
         esac
     done
 
-    if [ -z "${certhome}" ]; then echo "Error: certhome undefined."; usage; exit 1; fi
-    if [ -z "${svr_domain}" ]; then echo "Error: server domain undefined."; usage; exit 1; fi
+    if [ -z "${certhome}" ]; then echo -e "Error: Nginx certhome undefined.\n"; usage; exit 1; fi
+    if [ -z "${SITEDOMAINS}" ]; then echo -e "Error: Nginx site domain undefined.\n"; usage; exit 1; fi
     if [ -z "${port}" ]; then port=443; fi
-    if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
+    if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Port number must be numeric. \n"; exit 1; fi
 
-    fullchain="${certhome}/${svr_domain}/fullchain.cer"
-    prvkey="${certhome}/${svr_domain}/${svr_domain}.key"
-    if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then
-        echo "${svr_domain} TLS cert missing?"
-        echo "Abort."
-        exit 2
-    fi
+    # Generating default site config for every --ngserver invocation
+    # to avoid domain name leaking against bot probing.
+    default_domain="00_default_${port}"
+    mkdir "${certhome}/${default_domain}"; cd "${certhome}/${default_domain}"
+    # Generating self-signed cert for default domain.
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${default_domain}.key" -out fullchain.cer -subj "/C=US/ST=NV/L=Vegas/O=Internic/CN=localhost"
+    cd -
+    SITEDOMAINS+=("${default_domain}")
+    # Generating site config files for each domain including default domain.
+    for site_domain in "${SITEDOMAINS[@]}"
+    do
+        fullchain="${certhome}/${site_domain}/fullchain.cer"
+        prvkey="${certhome}/${site_domain}/${site_domain}.key"
+        if [ ! -f "${fullchain}" ] || [ ! -f "${prvkey}" ]; then >&2 echo -e "${site_domain} TLS cert missing?\nAbort.\n"; exit 2; fi
 
-    ESC_CERTFILE=$(printf '%s\n' "${fullchain}" | sed -e 's/[]\/$*.^[]/\\&/g')
-    ESC_PRVKEYFILE=$(printf '%s\n' "${prvkey}" | sed -e 's/[]\/$*.^[]/\\&/g')
-    cat "${SITE_TPL}" \
-        | sed "s/CERTFILE/${ESC_CERTFILE}/g" \
-        | sed "s/PRVKEYFILE/${ESC_PRVKEYFILE}/g" \
-        | sed "s/NGDOMAIN/${svr_domain}/g" \
-        | sed "s/NGPORT/${port}/g" \
-        | sed "s/NGPROTOCOL/${NGPROTOCOL}/g" \
-        >"${svr_domain}.conf"
-    # Applying proxy log format instead of main format when --ng-server proxy_pass was set
-    if [ -n "${NGPROTOCOL}" ]; then
-        sed -i '/access_log/s/main/proxy/' "${svr_domain}.conf"
-        sed -i 's/remote_addr/proxy_protocol_addr/g' "${svr_domain}.conf"
-        sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${svr_domain}.conf"
-    fi
-    echo "Generated /etc/nginx/conf.d/${svr_domain}.conf ====>"
-    cat /etc/nginx/conf.d/${svr_domain}.conf
+        ESC_CERTFILE=$(printf '%s\n' "${fullchain}" | sed -e 's/[]\/$*.^[]/\\&/g')
+        ESC_PRVKEYFILE=$(printf '%s\n' "${prvkey}" | sed -e 's/[]\/$*.^[]/\\&/g')
+        cat "${SITE_TPL}" \
+            | sed "s/CERTFILE/${ESC_CERTFILE}/g" \
+            | sed "s/PRVKEYFILE/${ESC_PRVKEYFILE}/g" \
+            | sed "s/NGDOMAIN/${site_domain}/g" \
+            | sed "s/NGPORT/${port}/g" \
+            | sed "s/NGPROTOCOL/${NGPROTOCOL}/g" \
+            >"${site_domain}.conf"
+        # Applying proxy log format instead of main format when --ng-server proxy_pass was set
+        if [ -n "${NGPROTOCOL}" ]; then
+            sed -i '/access_log/s/main/proxy/' "${site_domain}.conf"
+            sed -i 's/remote_addr/proxy_protocol_addr/g' "${site_domain}.conf"
+            sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${site_domain}.conf"
+        fi
+        echo "Generated /etc/nginx/conf.d/${site_domain}.conf ====>"
+        cat /etc/nginx/conf.d/${site_domain}.conf
+    done
 done
 
+# Adding proxy locations into site domain conf files
 for ngproxy in "${NGPROXY[@]}"
 do
     unset XDOMAINS xhost xport xlocation xnetwork

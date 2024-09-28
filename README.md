@@ -25,6 +25,8 @@ $ docker run --name server-xtls -p 80:80 -p 443:443 -d samuelhbne/server-xray \
 
 - Port 80 exposure (-p 80:80) is necessary for Letsencrypt domain verification during cert requesting.
 
+- Please replace the duckdns token in the hook-URL with yours obtained from duckdns.org home page.
+
 ### 2. VLESS-TCP-REALITY-XTLS server creation
 
 The following command starts a VLESS-TCP-REALITY-XTLS server on port 443. And update DDNS optionally, although IP only based connection is possible due to the nature of REALITY connection.

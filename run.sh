@@ -7,32 +7,32 @@ XCONF=/tmp/server-xray.json
 
 usage() {
     echo "server-xray <server-options>"
-    echo "    --lgp  <VLESS-GRPC-PLN option>        p=11443,u=id1,u=id2...,s=svcname"
-    echo "    --lgr  <VLESS-GRPC-RLTY option>       p=12443,u=id1,u=id2...,s=svcname,d=dest.com,pub=xx,prv=yy[,shortId=ab]"
-    echo "    --lgt  <VLESS-GRPC-TLS option>        p=13443,u=id1,u=id2...,s=svcname,d=domain.com"
-    echo "    --lsp  <VLESS-SPLT-PLN option>        p=14443,u=id1,u=id2...,w=/webpath"
-    echo "    --lst  <VLESS-SPLT-TLS option>        p=16443,u=id1,u=id2...,w=/webpath,d=domain.com"
-    echo "    --ltr  <VLESS-TCP-RLTY option>        p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[proxy_acpt],[xtls]"
-    echo "    --ltrx <VLESS-TCP-RLTY-XTLS option>   p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[proxy_acpt]"
-    echo "    --ltt  <VLESS-TCP-TLS option>         p=18443,u=id1,u=id2...,d=domain.com,[proxy_acpt],[xtls]"
-    echo "    --lttx <VLESS-TCP-TLS-XTLS option>    p=18443,u=id1,u=id2...,d=domain.com,[proxy_acpt]"
-    echo "    --lwp  <VLESS-WS-PLN option>          p=19443,u=id1,u=id2...,w=/wskpath"
-    echo "    --lwt  <VLESS-WS-TLS option>          p=22443,u=id1,u=id2...,w=/wskpath,d=domain.com"
-    echo "    --mtt  <VMESS-TCP-TLS option>         p=23443,u=id1,u=id2...,d=domain.com"
-    echo "    --mwp  <VMESS-WS-PLN option>          p=24443,u=id1,u=id2...,w=/wskpath"
-    echo "    --mwt  <VMESS-WS-TLS option>          p=25443,u=id1,u=id2...,w=/wskpath,d=domain.com"
-    echo "    --ttt  <TROJAN-TCP-TLS option>        p=26443,u=pw1,u=pw2...,d=domain.com"
-    echo "    --twp  <TROJAN-WS-PLN option>         p=27443,u=pw1,u=pw2...,w=/wskpath"
-    echo "    --twt  <TROJAN-WS-TLS option>         p=28443,u=pw1,u=pw2...,w=/wskpath,d=domain.com"
-    echo "    --ng-server <nginx-server-options>    p=8443,d=domain0.com,d=domain1.com...,[proxy_acpt]"
+    echo "    --lgp  <VLESS-GRPC-PLN option>        [proxy_acpt],p=11443,u=id1,u=id2...,s=svcname"
+    echo "    --lgr  <VLESS-GRPC-RLTY option>       [proxy_acpt],p=12443,u=id1,u=id2...,s=svcname,d=dest.com,pub=xx,prv=yy[,shortId=ab]"
+    echo "    --lgt  <VLESS-GRPC-TLS option>        [proxy_acpt],p=13443,u=id1,u=id2...,s=svcname,d=domain.com"
+    echo "    --lsp  <VLESS-SPLT-PLN option>        [proxy_acpt],p=14443,u=id1,u=id2...,w=/webpath"
+    echo "    --lst  <VLESS-SPLT-TLS option>        [proxy_acpt],p=16443,u=id1,u=id2...,w=/webpath,d=domain.com"
+    echo "    --ltr  <VLESS-TCP-RLTY option>        [proxy_acpt],p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab],[xtls]"
+    echo "    --ltrx <VLESS-TCP-RLTY-XTLS option>   [proxy_acpt],p=17443,u=id1,u=id2...,d=dest.com,pub=xx,prv=yy[,shortId=ab]"
+    echo "    --ltt  <VLESS-TCP-TLS option>         [proxy_acpt],p=18443,u=id1,u=id2...,d=domain.com,[xtls]"
+    echo "    --lttx <VLESS-TCP-TLS-XTLS option>    [proxy_acpt],p=18443,u=id1,u=id2...,d=domain.com"
+    echo "    --lwp  <VLESS-WS-PLN option>          [proxy_acpt],p=19443,u=id1,u=id2...,w=/wskpath"
+    echo "    --lwt  <VLESS-WS-TLS option>          [proxy_acpt],p=22443,u=id1,u=id2...,w=/wskpath,d=domain.com"
+    echo "    --mtt  <VMESS-TCP-TLS option>         [proxy_acpt],p=23443,u=id1,u=id2...,d=domain.com"
+    echo "    --mwp  <VMESS-WS-PLN option>          [proxy_acpt],p=24443,u=id1,u=id2...,w=/wskpath"
+    echo "    --mwt  <VMESS-WS-TLS option>          [proxy_acpt],p=25443,u=id1,u=id2...,w=/wskpath,d=domain.com"
+    echo "    --ttt  <TROJAN-TCP-TLS option>        [proxy_acpt],p=26443,u=pw1,u=pw2...,d=domain.com"
+    echo "    --twp  <TROJAN-WS-PLN option>         [proxy_acpt],p=27443,u=pw1,u=pw2...,w=/wskpath"
+    echo "    --twt  <TROJAN-WS-TLS option>         [proxy_acpt],p=28443,u=pw1,u=pw2...,w=/wskpath,d=domain.com"
+    echo "    --ng-server <nginx-server-options>    [proxy_acpt],p=8443,d=domain0.com,d=domain1.com..."
     echo "    --ng-proxy  <nginx-proxy-options>     d=domain0.com,d=domain1.com,p=port-backend,l=location,n=ws|grpc|splt"
-    echo "    --st-server <stream-port-number>      [p=443],[proxy_pass]"
+    echo "    --st-server <stream-port-number>      [proxy_pass],p=443"
     echo "    --st-map    <stream-map-options>      sni=domain.com,ups=127.0.0.1:8443"
-    echo "    --domain-block <domain-rule>          Add a domain rule for routing-server block, like geosite:category-ads-all"
+    echo "    --domain-block <domain-rule>          Add a domain rule for routing block, like geosite:category-ads-all"
     echo "    --ip-block  <ip-rule>                 Add a ip-addr rule for routing block, like geoip:private"
     echo "    --cn-block                            Add routing rules to avoid domains and IPs located in China being proxied"
     echo "    -u|--user   <global-user-options>     u=id0,u=id1..."
-    echo "    -k|--hook   <hook-url>                DDNS update or notifing URL to be hit"
+    echo "    -k|--hook   <hook-url>                DDNS update or any notifing URL to be hit"
     echo "    -r|--request-domain <domain-name>     Domain name to request for letsencrypt cert"
     echo "    -c|--cert-home <cert-home-dir>        Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
     echo "    -i|--stdin                            Read config from STDIN instead of auto generation"
@@ -136,6 +136,7 @@ while true ; do
     esac
 done
 
+# Invoking all hook-URLs
 if [ -n "${HOOKURL}" ]; then
     for URL in "${HOOKURL[@]}"
     do
@@ -147,6 +148,7 @@ if [ -n "${HOOKURL}" ]; then
     sleep 30
 fi
 
+# Acquiring Letsencrypt certs for each request-domain
 if [ -n "${CERTDOMAIN}" ]; then
     for DOMAIN in "${CERTDOMAIN[@]}"
     do
