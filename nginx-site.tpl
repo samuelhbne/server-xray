@@ -18,7 +18,7 @@ server {
     access_log  /var/log/nginx/access.log  main;
 
     location / {
-        return 404;
+        return 403;
     }
 
     #XLOCATION_TAG
