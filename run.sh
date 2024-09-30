@@ -78,13 +78,13 @@ while true ; do
             ;;
         --lgp|--lgr|--lgt|--lsp|--lst|--ltr|--ltt|--lwp|--lwt|--mtt|--mwp|--mwt|--ttt|--twp|--twt)
             # Alias options
-            SVC=$(echo $1|tr -d '\-\-')
+            SVC=$(echo "$1"|tr -d "\-\-")
             SVCMD+=("${DIR}/server-${SVC}.sh $2")
             shift 2
             ;;
         --ltrx|--lttx)
             # Alias options
-            SVC=$(echo $1|tr -d '\-\-'|tr -d x)
+            SVC=$(echo "$1"|tr -d "\-\-"|tr -d "x")
             SVCMD+=("${DIR}/server-${SVC}.sh $2,xtls")
             shift 2
             ;;
@@ -156,7 +156,7 @@ if [ "${#CERTDOMAIN[@]}" -gt 0 ]; then
         do
             echo "Requesting TLS cert for ${DOMAIN} ..."
             echo "/root/acme.sh/acme.sh --cert-home ${CERTHOME} --issue --standalone -d ${DOMAIN} --debug"
-            /root/acme.sh/acme.sh --cert-home "${CERTHOME}" --issue --standalone -d ${DOMAIN} --debug
+            /root/acme.sh/acme.sh --cert-home "${CERTHOME}" --issue --standalone -d "${DOMAIN}" --debug
             ((TRY++))
             if [ "${TRY}" -ge 3 ]; then
                 echo "Requesting TLS cert for ${DOMAIN} failed. Check log please."
