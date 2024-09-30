@@ -7,10 +7,10 @@ usage() {
     >&2 echo -e "User format: user|u=<uid>[:level:email]"
 }
 
-options=($(echo $1 |tr ',' ' '))
+IFS=',' read -a options <<< "$1"
 for option in "${options[@]}"
 do
-    kv=($(echo $option |tr '=' ' '))
+    IFS='=' read -a kv <<< "$option"
     case "${kv[0]}" in
         d|dest)
             dest="${kv[1]}"
@@ -47,6 +47,7 @@ do
             ;;
     esac
 done
+unset IFS
 
 if [ -z "${dest}" ]; then
     >&2 echo -e "Error: Fake Destination undefined.\n"

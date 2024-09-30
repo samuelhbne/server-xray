@@ -41,7 +41,7 @@ usage() {
 
 Jrules='{"rules":[]}'
 
-TEMP=$(getopt -o "u:k:r:c:j:di" --long "lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug" -n "$0" -- $@)
+TEMP=$(getopt -o u:k:r:c:j:di --long lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug -n "$0" -- "$@")
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -148,7 +148,7 @@ if [ -n "${HOOKURL}" ]; then
 fi
 
 # Acquiring Letsencrypt certs for each request-domain
-if [ -n "${CERTDOMAIN}" ]; then
+if [ "${#CERTDOMAIN[@]}" -gt 0 ]; then
     for DOMAIN in "${CERTDOMAIN[@]}"
     do
         TRY=0
@@ -171,7 +171,7 @@ fi
 xopt="certhome=$CERTHOME"
 for uopt in "${UOPT[@]}"; do xopt="$xopt,$uopt"; done
 
-if [ -z "${SVCMD}" ]; then
+if [ "${#SVCMD[@]}" -eq 0 ]; then
     echo -e "No Xray service creation found. Quit.\n"
     usage; exit 1
 fi
@@ -231,7 +231,7 @@ done
 if [ -n "${DEBUG}" ]; then loglevel="debug"; else loglevel="warning"; fi
 Jroot=$(echo $Jroot| jq --arg loglevel "${loglevel}" '.log.loglevel |= $loglevel')
 
-if [ -n "${INJECT[@]}" ]; then
+if [ "${#INJECT[@]}" -gt 0 ]; then
     for JSON_IN in "${INJECT[@]}"
     do
         Jmerge=$(jq -nc "${JSON_IN}")

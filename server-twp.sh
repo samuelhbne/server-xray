@@ -7,16 +7,19 @@ usage() {
     >&2 echo -e "User format: user=<uid>[:level:email]"
 }
 
-options=($(echo $1 |tr ',' ' '))
+IFS=',' read -a options <<< "$1"
 for option in "${options[@]}"
 do
-    kv=($(echo $option |tr '=' ' '))
+    IFS='=' read -a kv <<< "$option"
     case "${kv[0]}" in
         d|domain)
             domain="${kv[1]}"
             ;;
         f|fallback)
             fallback+=("${kv[1]}")
+            ;;
+        flow)
+            flow="${kv[1]}"
             ;;
         p|port)
             port="${kv[1]}"
@@ -32,6 +35,7 @@ do
             ;;
     esac
 done
+unset IFS
 
 if [ -z "${domain}" ]; then
     >&2 echo -e "Error: Domain undefined.\n"

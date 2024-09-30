@@ -7,10 +7,10 @@ usage() {
     >&2 echo -e "User format: user=<uid>[:level:email]"
 }
 
-options=($(echo $1 |tr ',' ' '))
+IFS=',' read -a options <<< "$1"
 for option in "${options[@]}"
 do
-    kv=($(echo $option |tr '=' ' '))
+    IFS='=' read -a kv <<< "$option"
     case "${kv[0]}" in
         c|certhome)
             certhome="${kv[1]}"
@@ -41,6 +41,7 @@ do
             ;;
     esac
 done
+unset IFS
 
 if [ -z "${certhome}" ]; then
     >&2 echo -e "Error: Certhome undefined.\n"

@@ -12,7 +12,7 @@ usage() {
     >&2 echo "    --st-server   [p=443],[proxy_pass]"
 }
 
-TEMP=$(getopt -o "m:n:p:s:x:" --long "ng-server:,ng-proxy:,st-server:,st-map:" -n "$0" -- $@)
+TEMP=$(getopt -o m:n:p:s:x: --long ng-server:,ng-proxy:,st-server:,st-map: -n "$0" -- "$@")
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -49,13 +49,13 @@ while true ; do
     esac
 done
 
-if [ -z "${NGSVR}" ] && [ -z "${STPORT}" ]; then
+if [ "${#NGSVR[@]}" -eq 0 ] && [ -z "${STSVR}" ]; then
     >&2 echo -e "No Stream/Server defined. Quit.\n";
     usage; exit 1;
 fi
 
 # Running as root to enable transparent stream.
-# sed -i 's/^user \+nginx;$/user  root;/g' /etc/nginx/nginx.conf
+# sed -i 's/^user \+nginx;$/user  root;/g' $NGCONF
 
 cd /etc/nginx/conf.d/
 if [ -f /etc/nginx/conf.d/default.conf ]; then
@@ -63,9 +63,9 @@ if [ -f /etc/nginx/conf.d/default.conf ]; then
 fi
 
 # Remove all lines generated previously after #STREAM_TAG tag.
-sed -i '/\#STREAM_TAG/q' /etc/nginx/nginx.conf
+sed -i '/\#STREAM_TAG/q' $NGCONF
 # Remove #STREAM_TAG tag
-sed -i '/\#STREAM_TAG/d' /etc/nginx/nginx.conf
+sed -i '/\#STREAM_TAG/d' $NGCONF
 
 # Generate Nginx Stream server configuration.
 if [ -n "${STSVR}" ]; then
@@ -87,7 +87,7 @@ options=($(echo $STSVR |tr ',' ' '))
     if ! [ "${STPORT}" -eq "${STPORT}" ] 2>/dev/null; then >&2 echo "Stream port number must be numeric"; exit 1; fi
 
     # Attaching the stream configuration template to the tail of nginx.conf
-    cat ${STREAM_TPL} >> /etc/nginx/nginx.conf
+    cat ${STREAM_TPL} >> $NGCONF
     for stmap in "${STMAP[@]}"
     do
         options=($(echo $stmap |tr ',' ' '))
@@ -112,18 +112,18 @@ options=($(echo $STSVR |tr ',' ' '))
     done
 
     # Adding map.conf down to #XMAP_TAG tag
-    sed -i '/#XMAP_TAG/r /tmp/stmap.conf' /etc/nginx/nginx.conf
+    sed -i '/#XMAP_TAG/r /tmp/stmap.conf' $NGCONF
     # Adding ups.conf down to #XUPSTREAM_TAG tag
-    sed -i '/#XUPSTREAM_TAG/r /tmp/stups.conf' /etc/nginx/nginx.conf
-    sed -i "s/STPORT/${STPORT}/g" /etc/nginx/nginx.conf
+    sed -i '/#XUPSTREAM_TAG/r /tmp/stups.conf' $NGCONF
+    sed -i "s/STPORT/${STPORT}/g" $NGCONF
     # Adding "proxy_protocol=on" down to #STPROXY_PASS_TAG tag
     if [ -n "${STPROXY_PASS}" ]; then
         echo "        proxy_protocol on;" >/tmp/stproxy.conf
-        sed -i '/#STPROXY_PASS_TAG/r /tmp/stproxy.conf' /etc/nginx/nginx.conf
+        sed -i '/#STPROXY_PASS_TAG/r /tmp/stproxy.conf' $NGCONF
     fi
     rm -rf /tmp/stmap.conf; rm -rf /tmp/stups.conf; rm -rf /tmp/stproxy.conf
-    echo "Generated /etc/nginx/nginx.conf ====>"
-    cat /etc/nginx/nginx.conf
+    echo "Generated $NGCONF ====>"
+    cat $NGCONF
 fi
 
 # Generating Nginx site server configurations.
@@ -155,7 +155,7 @@ do
     done
 
     if [ -z "${certhome}" ]; then echo -e "Error: Nginx certhome undefined.\n"; usage; exit 1; fi
-    if [ -z "${SITEDOMAINS}" ]; then echo -e "Error: Nginx site domain undefined.\n"; usage; exit 1; fi
+    if [ "${#SITEDOMAINS[@]}" -eq 0 ]; then echo -e "Error: Nginx site domain undefined.\n"; usage; exit 1; fi
     if [ -z "${port}" ]; then port=443; fi
     if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Port number must be numeric. \n"; exit 1; fi
 
@@ -223,7 +223,7 @@ do
     done
 
     if [ -z "${xhost}" ]; then xhost="127.0.0.1"; fi
-    if [ -z "${XDOMAINS}" ]; then XDOMAINS=("${ALLDOMAINS[@]}"); fi
+    if [ "${#XDOMAINS[@]}" -eq 0 ]; then XDOMAINS=("${ALLDOMAINS[@]}"); fi
     if [ -z "${xnetwork}" ]; then echo "Missing network: $ngproxy"; usage; exit 1; fi
     if [ -z "${xlocation}" ]; then echo "Missing location: $ngproxy"; usage; exit 1; fi
     if [ -z "${xport}" ]; then echo "Missing port: $ngproxy"; usage; exit 1; fi
