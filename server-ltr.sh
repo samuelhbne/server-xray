@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=`dirname $0`
+DIR=$(dirname $0)
 
 usage() {
     >&2 echo "VLESS-TCP-REALITY server builder"
@@ -9,10 +9,10 @@ usage() {
     >&2 echo "User format: user|u=<uid>[:level:email]"
 }
 
-options=(`echo $1 |tr ',' ' '`)
+options=($(echo $1 |tr ',' ' '))
 for option in "${options[@]}"
 do
-    kv=(`echo $option |tr '=' ' '`)
+    kv=($(echo $option |tr '=' ' '))
     case "${kv[0]}" in
         d|dest)
             dest="${kv[1]}"
@@ -62,7 +62,7 @@ fi
 
 if [ -z "${prvkey}" ]; then
     >&2 echo "Warning: PrivateKey undefined, Generated new..."
-    kv=(`/usr/local/bin/xray x25519|cut -d ' ' -f3|tr ' '`)
+    kv=($(/usr/local/bin/xray x25519|cut -d ' ' -f3|tr ' '))
     prvkey="${kv[0]}"
     pubkey="${kv[1]}"
     >&2 echo "PublicKey: $pubkey"
@@ -76,7 +76,7 @@ fi
 if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
 # inbound frame
-inbound=`jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"vless","settings":{"decryption":"none"}}'`
+inbound=$(jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"vless","settings":{"decryption":"none"}}')
 
 # User settings
 for user in "${xuser[@]}"
@@ -87,34 +87,34 @@ do
     if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
     if [ -z "${level}" ]; then level=0; fi
     if [ -z "${email}" ]; then email="${uid}@ltr.$dest"; fi
-    inbound=`echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
-    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]'`
+    inbound=$(echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
+    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]')
 done
 
 # StreamSettings
 if [ -n "${acceptProxyProtocol}" ]; then
-    inbound=`echo $inbound| jq -c '.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
+    inbound=$(echo $inbound| jq -c '.streamSettings.sockopt += {"acceptProxyProtocol":true}')
 fi
 
 # Network settings
-inbound=`echo $inbound| jq -c '.streamSettings += {"network":"tcp"}'`
+inbound=$(echo $inbound| jq -c '.streamSettings += {"network":"tcp"}')
 
 # Security settings
-inbound=`echo $inbound| jq -c '.streamSettings += {"security":"reality"}'`
+inbound=$(echo $inbound| jq -c '.streamSettings += {"security":"reality"}')
 
 # Reality settings
-inbound=`echo $inbound| jq -c --arg dest "${dest}" --arg pubkey "${pubkey}" --arg prvkey "${prvkey}" \
-'.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}'`
+inbound=$(echo $inbound| jq -c --arg dest "${dest}" --arg pubkey "${pubkey}" --arg prvkey "${prvkey}" \
+'.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}')
 
 # serverNames settings
 if [ -n "${serverNames}" ]; then
-    JserverNames=`printf '%s\n' "${serverNames[@]}"|jq -R|jq -sc`
-    inbound=`echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.streamSettings.realitySettings.serverNames += $JserverNames'`
+    JserverNames=$(printf '%s\n' "${serverNames[@]}"|jq -R|jq -sc)
+    inbound=$(echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.streamSettings.realitySettings.serverNames += $JserverNames')
 fi
 
 # shortIds settings
-JshortIds=`printf '%s\n' "${shortIds[@]}"|jq -R|jq -sc`
-inbound=`echo $inbound| jq -c --argjson JshortIds "${JshortIds}" '.streamSettings.realitySettings.shortIds += $JshortIds'`
+JshortIds=$(printf '%s\n' "${shortIds[@]}"|jq -R|jq -sc)
+inbound=$(echo $inbound| jq -c --argjson JshortIds "${JshortIds}" '.streamSettings.realitySettings.shortIds += $JshortIds')
 
 # Fallback settings
 for fb in "${fallback[@]}"
@@ -125,8 +125,8 @@ do
     if [ -z "${fport}" ]; then >&2 echo "Incorrect fallback format: ${fallback}"; usage; exit 1; fi
     if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
     fdest="$fhost:$fport"
-    Jfb=`jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}'`
-    inbound=`echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]'`
+    Jfb=$(jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}')
+    inbound=$(echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]')
 done
 
 echo $inbound

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=`dirname $0`
+DIR=$(dirname $0)
 DIR="$(cd $DIR; pwd)"
 SITE_TPL="nginx-site.tpl"
 STREAM_TPL="nginx-stream.tpl"
@@ -14,7 +14,7 @@ usage() {
     >&2 echo "    --st-server   [p=443],[proxy_pass]"
 }
 
-TEMP=`getopt -o m:n:p:s:x: --long ng-server:,ng-proxy:,st-server:,st-map: -n "$0" -- $@`
+TEMP=$(getopt -o m:n:p:s:x: --long ng-server:,ng-proxy:,st-server:,st-map: -n "$0" -- $@)
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -71,10 +71,10 @@ sed -i '/\#STREAM_TAG/d' /etc/nginx/nginx.conf
 
 # Generate Nginx Stream server configuration.
 if [ -n "${STSVR}" ]; then
-options=(`echo $STSVR |tr ',' ' '`)
+options=($(echo $STSVR |tr ',' ' '))
     for option in "${options[@]}"
     do
-        kv=(`echo $option |tr '=' ' '`)
+        kv=($(echo $option |tr '=' ' '))
         case "${kv[0]}" in
             p|port)
                 STPORT="${kv[1]}"
@@ -92,10 +92,10 @@ options=(`echo $STSVR |tr ',' ' '`)
     cat ${STREAM_TPL} >> /etc/nginx/nginx.conf
     for stmap in "${STMAP[@]}"
     do
-        options=(`echo $stmap |tr ',' ' '`)
+        options=($(echo $stmap |tr ',' ' '))
         for option in "${options[@]}"
         do
-            kv=(`echo $option |tr '=' ' '`)
+            kv=($(echo $option |tr '=' ' '))
             case "${kv[0]}" in
                 sni)
                     sni="${kv[1]}"
@@ -106,7 +106,7 @@ options=(`echo $STSVR |tr ',' ' '`)
             esac
         done
         # Naming the upstream as yahoo_com_jp for SNI yahoo.com.jp
-        upsname=`echo $sni|sed 's/\./_/g'`
+        upsname=$(echo $sni|sed 's/\./_/g')
         echo "        $sni $upsname;"       >>/tmp/stmap.conf
         echo "    upstream $upsname {"      >>/tmp/stups.conf
         echo "        server $upstream;"    >>/tmp/stups.conf
@@ -134,10 +134,10 @@ do
     unset certhome NGPROTOCOL
     # removing site default config file if any. 
     rm -rf /etc/nginx/conf.d/00_default_*.conf
-    options=(`echo $ngsvr |tr ',' ' '`)
+    options=($(echo $ngsvr |tr ',' ' '))
     for option in "${options[@]}"
     do
-        kv=(`echo $option |tr '=' ' '`)
+        kv=($(echo $option |tr '=' ' '))
         case "${kv[0]}" in
             c|certhome)
                 certhome="${kv[1]}"
@@ -200,10 +200,10 @@ done
 for ngproxy in "${NGPROXY[@]}"
 do
     unset XDOMAINS xhost xport xlocation xnetwork
-    options=(`echo $ngproxy |tr ',' ' '`)
+    options=($(echo $ngproxy |tr ',' ' '))
     for option in "${options[@]}"
     do
-        kv=(`echo $option |tr '=' ' '`)
+        kv=($(echo $option |tr '=' ' '))
         case "${kv[0]}" in
             d|domain)
                 XDOMAINS+=("${kv[1]}")

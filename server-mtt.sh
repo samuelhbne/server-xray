@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=`dirname $0`
+DIR=$(dirname $0)
 
 usage() {
     >&2 echo "VMESS-TCP-TLS server builder"
@@ -9,10 +9,10 @@ usage() {
     >&2 echo "User format: user|u=<uid>[:level:email]"
 }
 
-options=(`echo $1 |tr ',' ' '`)
+options=($(echo $1 |tr ',' ' '))
 for option in "${options[@]}"
 do
-    kv=(`echo $option |tr '=' ' '`)
+    kv=($(echo $option |tr '=' ' '))
     case "${kv[0]}" in
         c|certhome)
             certhome="${kv[1]}"
@@ -69,7 +69,7 @@ if [ ! -f "${prvkey}" ]; then >&2 echo "Warning, Private key not found: ${prvkey
 if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Error: Port number must be numeric.\n"; exit 1; fi
 
 # inbound frame
-inbound=`jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"vmess","settings":{"decryption":"none"}}'`
+inbound=$(jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"vmess","settings":{"decryption":"none"}}')
 
 # User settings
 for user in "${xuser[@]}"
@@ -80,22 +80,22 @@ do
     if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
     if [ -z "${level}" ]; then level=0; fi
     if [ -z "${email}" ]; then email="${uid}@mtt.$domain"; fi
-    inbound=`echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
-    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]'`
+    inbound=$(echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
+    '.settings.clients += [{"id":$uid,"level":($level|tonumber),"email":$email,"flow":$flow}]')
 done
 
 # StreamSettings
 if [ -n "${acceptProxyProtocol}" ]; then
-    inbound=`echo $inbound| jq -c '.streamSettings.sockopt += {"acceptProxyProtocol":true}'`
+    inbound=$(echo $inbound| jq -c '.streamSettings.sockopt += {"acceptProxyProtocol":true}')
 fi
 
 # Network settings
-inbound=`echo $inbound| jq -c '.streamSettings += {"network":"tcp"}'`
+inbound=$(echo $inbound| jq -c '.streamSettings += {"network":"tcp"}')
 
 # Security settings
-inbound=`echo $inbound| jq -c '.streamSettings += {"security":"tls"}'`
-inbound=`echo $inbound| jq -c --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
-'.streamSettings.tlsSettings += {"certificates":[{"certificateFile":$fullchain,"keyFile":$prvkey}]}'`
+inbound=$(echo $inbound| jq -c '.streamSettings += {"security":"tls"}')
+inbound=$(echo $inbound| jq -c --arg fullchain "${fullchain}" --arg prvkey "${prvkey}" \
+'.streamSettings.tlsSettings += {"certificates":[{"certificateFile":$fullchain,"keyFile":$prvkey}]}')
 
 # Fallback settings
 for fb in "${fallback[@]}"
@@ -106,8 +106,8 @@ do
     if [ -z "${fport}" ]; then >&2 echo "Incorrect fallback format: ${fallback}"; usage; exit 1; fi
     if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
     fdest="$fhost:$fport"
-    Jfb=`jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}'`
-    inbound=`echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]'`
+    Jfb=$(jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}')
+    inbound=$(echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]')
 done
 
 echo $inbound

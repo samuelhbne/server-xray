@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=`dirname $0`
+DIR=$(dirname $0)
 DIR="$(cd $DIR; pwd)"
 CERTHOME="/opt/cert"
 XCONF=/tmp/server-xray.json
@@ -42,7 +42,7 @@ usage() {
 
 Jrules='{"rules":[]}'
 
-TEMP=`getopt -o u:k:r:c:j:di --long lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug -n "$0" -- $@`
+TEMP=$(getopt -o u:k:r:c:j:di --long lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug -n "$0" -- $@)
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -79,33 +79,33 @@ while true ; do
             ;;
         --lgp|--lgr|--lgt|--lsp|--lst|--ltr|--ltt|--lwp|--lwt|--mtt|--mwp|--mwt|--ttt|--twp|--twt)
             # Alias options
-            SVC=`echo $1|tr -d '\-\-'`
+            SVC=$(echo $1|tr -d '\-\-')
             SVCMD+=("${DIR}/server-${SVC}.sh $2")
             shift 2
             ;;
         --ltrx|--lttx)
             # Alias options
-            SVC=`echo $1|tr -d '\-\-'|tr -d x`
+            SVC=$(echo $1|tr -d '\-\-'|tr -d x)
             SVCMD+=("${DIR}/server-${SVC}.sh $2,xtls")
             shift 2
             ;;
         --domain-block)
-            Jrules=`echo "${Jrules}" | jq --arg blkdomain "$2" \
-            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$blkdomain]}]'`
+            Jrules=$(echo "${Jrules}" | jq --arg blkdomain "$2" \
+            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$blkdomain]}]')
             shift 2
             ;;
         --ip-block)
-            Jrules=`echo "${Jrules}" | jq --arg blkip "$2" \
-            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$blkip]}]'`
+            Jrules=$(echo "${Jrules}" | jq --arg blkip "$2" \
+            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$blkip]}]')
             shift 2
             ;;
         --cn-block)
-            Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:geolocation-cn" \
-            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]'`
-            Jrules=`echo "${Jrules}" | jq --arg igndomain "geosite:cn" \
-            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]'`
-            Jrules=`echo "${Jrules}" | jq --arg ignip "geoip:cn" \
-            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$ignip]}]'`
+            Jrules=$(echo "${Jrules}" | jq --arg igndomain "geosite:geolocation-cn" \
+            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]')
+            Jrules=$(echo "${Jrules}" | jq --arg igndomain "geosite:cn" \
+            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]')
+            Jrules=$(echo "${Jrules}" | jq --arg ignip "geoip:cn" \
+            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$ignip]}]')
             shift 1
             ;;
         --ng-server)
@@ -214,30 +214,30 @@ Jroot='{"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"blocked","pro
 
 # Add routing config
 Jrouting='{"routing":{"domainStrategy":"AsIs"}}'
-Jrouting=`echo $Jrouting |jq --argjson jrules "${Jrules}" '.routing += $jrules'`
+Jrouting=$(echo $Jrouting |jq --argjson jrules "${Jrules}" '.routing += $jrules')
 
-Jroot=`echo $Jroot| jq --argjson jrouting "${Jrouting}" '. += $jrouting'`
+Jroot=$(echo $Jroot| jq --argjson jrouting "${Jrouting}" '. += $jrouting')
 
 # Xray service config generation
 for svcmd in "${SVCMD[@]}"
 do
-    Jsvc=`$svcmd,$xopt`
+    Jsvc=$($svcmd,$xopt)
     if [[ $? -ne 0 ]]; then
         echo "Service creation command failed: $svcmd,$xopt"
         exit 1
     fi
-    Jroot=`echo $Jroot| jq --argjson Jsvc "${Jsvc}" '.inbounds += [$Jsvc]'`
+    Jroot=$(echo $Jroot| jq --argjson Jsvc "${Jsvc}" '.inbounds += [$Jsvc]')
 done
 
 if [ -n "${DEBUG}" ]; then loglevel="debug"; else loglevel="warning"; fi
-Jroot=`echo $Jroot| jq --arg loglevel "${loglevel}" '.log.loglevel |= $loglevel'`
+Jroot=$(echo $Jroot| jq --arg loglevel "${loglevel}" '.log.loglevel |= $loglevel')
 
 if [ -n "${INJECT}" ]; then
     for JSON_IN in "${INJECT[@]}"
     do
-        Jmerge=`jq -nc "${JSON_IN}"`
+        Jmerge=$(jq -nc "${JSON_IN}")
         if [[ $? -ne 0 ]]; then echo "Invalid json ${JSON_IN}"; exit 1; fi
-        Jroot=`jq -n --argjson Jroot "${Jroot}" --argjson Jmerge "${Jmerge}" '$Jroot + $Jmerge'`
+        Jroot=$(jq -n --argjson Jroot "${Jroot}" --argjson Jmerge "${Jmerge}" '$Jroot + $Jmerge')
     done
 fi
 
