@@ -117,5 +117,5 @@ do
     inbound=$(echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]')
 done
 
-echo $inbound
+echo "$inbound"
 exit 0
