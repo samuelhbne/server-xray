@@ -66,7 +66,7 @@ if [ -z "${prvkey}" ]; then
     >&2 echo -e "PublicKey: $pubkey\n"
 fi
 
-if [ -z "${xuser[@]}" ]; then
+if [ "${#xuser[@]}" -eq 0 ]; then
     >&2 echo -e "Error: User undefined.\n"
     usage; exit 1
 fi
@@ -105,7 +105,7 @@ inbound=$(echo $inbound| jq -c --arg dest "${dest}" --arg pubkey "${pubkey}" --a
 '.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}')
 
 # serverNames settings
-if [ -n "${serverNames[@]}" ]; then
+if [ "${#serverNames[@]}" -gt 0 ]; then
     JserverNames=$(printf '%s\n' "${serverNames[@]}"|jq -R|jq -sc)
     inbound=$(echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.streamSettings.realitySettings.serverNames += $JserverNames')
 fi

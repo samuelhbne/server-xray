@@ -104,7 +104,7 @@ options=($(echo $STSVR |tr ',' ' '))
             esac
         done
         # Naming the upstream as yahoo_com_jp for SNI yahoo.com.jp
-        upsname=$(echo "${sni//\./_}")
+        upsname="${sni//\./_}"
         echo "        $sni $upsname;"       >>/tmp/stmap.conf
         echo "    upstream $upsname {"      >>/tmp/stups.conf
         echo "        server $upstream;"    >>/tmp/stups.conf

@@ -48,7 +48,7 @@ if [ -z "${serviceName}" ]; then
     usage; exit 1
 fi
 
-if [ -z "${xuser[@]}" ]; then
+if [ "${#xuser[@]}" -eq 0 ]; then
     >&2 echo -e "Error: User undefined.\n"
     usage; exit 1
 fi
