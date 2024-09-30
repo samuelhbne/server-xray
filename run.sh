@@ -136,7 +136,7 @@ while true ; do
 done
 
 # Invoking all hook-URLs
-if [ -n "${HOOKURL}" ]; then
+if [ "${#HOOKURL[@]}" -gt 0 ]; then
     for URL in "${HOOKURL[@]}"
     do
         echo "curl -sSL $URL"
@@ -185,7 +185,7 @@ if [ -n "${STSVR}" ]; then
     done
 fi
 
-if [ -n "${NGSVR}" ]; then
+if [ "${#NGSVR[@]}" -gt 0 ]; then
     for svropt in "${NGSVR[@]}"
     do
         NGOPT="${NGOPT} --ng-server ${svropt},$xopt"

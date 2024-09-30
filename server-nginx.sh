@@ -69,10 +69,10 @@ sed -i '/\#STREAM_TAG/d' $NGCONF
 
 # Generate Nginx Stream server configuration.
 if [ -n "${STSVR}" ]; then
-options=($(echo $STSVR |tr ',' ' '))
+    IFS=',' read -ra options <<< "$STSVR"
     for option in "${options[@]}"
     do
-        kv=($(echo $option |tr '=' ' '))
+        IFS='=' read -ra kv <<< "$option"
         case "${kv[0]}" in
             p|port)
                 STPORT="${kv[1]}"
@@ -82,6 +82,7 @@ options=($(echo $STSVR |tr ',' ' '))
                 ;;
         esac
     done
+    unset IFS
 
     if [ -z "${STPORT}" ]; then STPORT=443; fi
     if ! [ "${STPORT}" -eq "${STPORT}" ] 2>/dev/null; then >&2 echo "Stream port number must be numeric"; exit 1; fi
@@ -90,10 +91,10 @@ options=($(echo $STSVR |tr ',' ' '))
     cat ${STREAM_TPL} >> $NGCONF
     for stmap in "${STMAP[@]}"
     do
-        options=($(echo $stmap |tr ',' ' '))
+        IFS=',' read -ra options <<< "$stmap"
         for option in "${options[@]}"
         do
-            kv=($(echo $option |tr '=' ' '))
+            IFS='=' read -ra kv <<< "$option"
             case "${kv[0]}" in
                 sni)
                     sni="${kv[1]}"
@@ -103,6 +104,7 @@ options=($(echo $STSVR |tr ',' ' '))
                     ;;
             esac
         done
+        unset IFS
         # Naming the upstream as yahoo_com_jp for SNI yahoo.com.jp
         upsname="${sni//\./_}"
         echo "        $sni $upsname;"       >>/tmp/stmap.conf
@@ -132,10 +134,10 @@ do
     unset certhome NGPROTOCOL
     # removing site default config file if any. 
     rm -rf /etc/nginx/conf.d/00_default_*.conf
-    options=($(echo $ngsvr |tr ',' ' '))
+    IFS=',' read -ra options <<< "$ngsvr"
     for option in "${options[@]}"
     do
-        kv=($(echo $option |tr '=' ' '))
+        IFS='=' read -ra kv <<< "$option"
         case "${kv[0]}" in
             c|certhome)
                 certhome="${kv[1]}"
@@ -153,6 +155,7 @@ do
                 ;;
         esac
     done
+    unset IFS
 
     if [ -z "${certhome}" ]; then echo -e "Error: Nginx certhome undefined.\n"; usage; exit 1; fi
     if [ "${#SITEDOMAINS[@]}" -eq 0 ]; then echo -e "Error: Nginx site domain undefined.\n"; usage; exit 1; fi
@@ -199,10 +202,10 @@ done
 for ngproxy in "${NGPROXY[@]}"
 do
     unset XDOMAINS xhost xport xlocation xnetwork
-    options=($(echo $ngproxy |tr ',' ' '))
+    IFS=',' read -ra options <<< "$ngproxy"
     for option in "${options[@]}"
     do
-        kv=($(echo $option |tr '=' ' '))
+        IFS='=' read -ra kv <<< "$option"
         case "${kv[0]}" in
             d|domain)
                 XDOMAINS+=("${kv[1]}")
@@ -221,6 +224,7 @@ do
                 ;;
         esac
     done
+    unset IFS
 
     if [ -z "${xhost}" ]; then xhost="127.0.0.1"; fi
     if [ "${#XDOMAINS[@]}" -eq 0 ]; then XDOMAINS=("${ALLDOMAINS[@]}"); fi

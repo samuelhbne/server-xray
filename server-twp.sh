@@ -7,10 +7,10 @@ usage() {
     >&2 echo -e "User format: user=<uid>[:level:email]"
 }
 
-IFS=',' read -a options <<< "$1"
+IFS=',' read -ra options <<< "$1"
 for option in "${options[@]}"
 do
-    IFS='=' read -a kv <<< "$option"
+    IFS='=' read -ra kv <<< "$option"
     case "${kv[0]}" in
         d|domain)
             domain="${kv[1]}"
@@ -65,7 +65,7 @@ inbound=$(jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"troj
 # User settings
 for user in "${xuser[@]}"
 do
-    IFS=':'; uopt=(${user}); uopt=(${uopt[@]})
+    IFS=':'; uopt=("${user}"); uopt=("${uopt[@]}")
     uid="${uopt[0]}"; level="${uopt[1]}"; email="${uopt[2]}"
     unset IFS
     if [ -z "${uid}" ]; then >&2 echo -e "Incorrect user format: $user\n"; usage; exit 1; fi
@@ -102,5 +102,5 @@ do
     inbound=$(echo $inbound| jq -c --argjson Jfb "${Jfb}" '.settings.fallbacks += [$Jfb]')
 done
 
-echo $inbound
+echo "$inbound"
 exit 0
