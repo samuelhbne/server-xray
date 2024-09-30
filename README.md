@@ -21,7 +21,7 @@ $ docker run --name server-xtls -p 80:80 -p 443:443 -d samuelhbne/server-xray \
 ...
 ```
 
-** NOTE **
+**NOTE**
 
 - Port 80 exposure (-p 80:80) is necessary for Letsencrypt domain verification during cert requesting.
 

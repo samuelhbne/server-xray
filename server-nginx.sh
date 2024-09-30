@@ -14,7 +14,7 @@ usage() {
     >&2 echo "    --st-server   [p=443],[proxy_pass]"
 }
 
-TEMP=$(getopt -o m:n:p:s:x: --long ng-server:,ng-proxy:,st-server:,st-map: -n "$0" -- $@)
+TEMP=$(getopt -o "m:n:p:s:x:" --long "ng-server:,ng-proxy:,st-server:,st-map:" -n "$0" -- $@)
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -164,10 +164,11 @@ do
     # Generating default site config for every --ngserver invocation
     # to avoid domain name leaking against bot probing.
     default_domain="00_default_${port}"
-    mkdir "${certhome}/${default_domain}"; cd "${certhome}/${default_domain}"
-    # Generating self-signed cert for default domain.
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${default_domain}.key" -out fullchain.cer -subj "/C=US/ST=NV/L=Vegas/O=Internic/CN=localhost"
-    cd -
+    (
+        mkdir "${certhome}/${default_domain}"; cd "${certhome}/${default_domain}"
+        # Generating self-signed cert for default domain.
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${default_domain}.key" -out fullchain.cer -subj "/C=US/ST=NV/L=Vegas/O=Internic/CN=localhost"
+    )
     SITEDOMAINS+=("${default_domain}")
     # Generating site config files for each domain including default domain.
     for site_domain in "${SITEDOMAINS[@]}"

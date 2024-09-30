@@ -3,10 +3,10 @@
 DIR=$(dirname $0)
 
 usage() {
-    >&2 echo "VLESS-GRPC-PLAIN server builder"
-    >&2 echo "Usage: server-lgp <s=svcname>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path]"
-    >&2 echo "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
-    >&2 echo "User format: user|u=<uid>[:level:email]"
+    >&2 echo -e "VLESS-GRPC-PLAIN server builder"
+    >&2 echo -e "Usage: server-lgp <s=svcname>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path]"
+    >&2 echo -e "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
+    >&2 echo -e "User format: user|u=<uid>[:level:email]"
 }
 
 options=($(echo $1 |tr ',' ' '))
@@ -66,7 +66,7 @@ do
     IFS=':'; uopt=(${user}); uopt=(${uopt[@]})
     uid="${uopt[0]}"; level="${uopt[1]}"; email="${uopt[2]}"
     unset IFS
-    if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
+    if [ -z "${uid}" ]; then >&2 echo -e "Incorrect user format: $user\n"; usage; exit 1; fi
     if [ -z "${level}" ]; then level=0; fi
     if [ -z "${email}" ]; then email="${uid}@lgp.$domain"; fi
     inbound=$(echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
@@ -90,7 +90,7 @@ do
     IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
     fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
     unset IFS
-    if [ -z "${fport}" ]; then >&2 echo "Incorrect fallback format: ${fallback}"; usage; exit 1; fi
+    if [ -z "${fport}" ]; then >&2 echo -e "Incorrect fallback format: ${fallback}\n"; usage; exit 1; fi
     if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
     fdest="$fhost:$fport"
     Jfb=$(jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}')

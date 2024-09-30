@@ -3,10 +3,10 @@
 DIR=$(dirname $0)
 
 usage() {
-    >&2 echo "TROJAN-WS-TLS server builder"
-    >&2 echo "Usage: server-twt <w=wskpath>,<c=certhome-dir>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path],[xtls]"
-    >&2 echo "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
-    >&2 echo "User format: user=<uid>[:level:email]"
+    >&2 echo -e "TROJAN-WS-TLS server builder"
+    >&2 echo -e "Usage: server-twt <w=wskpath>,<c=certhome-dir>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path],[xtls]"
+    >&2 echo -e "Fallback format: fallback=[host]<:port>[:/path] Like: 'baidu.com:443:/path', ':1443:/path', ':1443'"
+    >&2 echo -e "User format: user=<uid>[:level:email]"
 }
 
 options=($(echo $1 |tr ',' ' '))
@@ -45,36 +45,36 @@ do
 done
 
 if [ -z "${certhome}" ]; then
-    >&2 echo "Error: Certhome undefined."
+    >&2 echo -e "Error: Certhome undefined.\n"
     usage; exit 1
 fi
 
 if [ -z "${domain}" ]; then
-    >&2 echo "Error: Domain undefined."
+    >&2 echo -e "Error: Domain undefined.\n"
     usage; exit 1
 fi
 
 if [ -z "${port}" ]; then
-    >&2 echo "Error: Port undefined."
+    >&2 echo -e "Error: Port undefined.\n"
     usage; exit 1 ;
 fi
 
 if [ -z "${wspath}" ]; then
-    >&2 echo "Error: wspath undefined."
+    >&2 echo -e "Error: wspath undefined.\n"
     usage; exit 1
 fi
 
 if [ -z "${xuser}" ]; then
-    >&2 echo "Error: User undefined."
+    >&2 echo -e "Error: User undefined.\n"
     usage; exit 1
 fi
 
 fullchain="${certhome}/${domain}/fullchain.cer"
 prvkey="${certhome}/${domain}/${domain}.key"
-if [ ! -f "${fullchain}" ]; then >&2 echo "Warning, Fullchain not found: ${fullchain}"; fi
-if [ ! -f "${prvkey}" ]; then >&2 echo "Warning, Private key not found: ${prvkey}"; fi
+if [ ! -f "${fullchain}" ]; then >&2 echo -e "Warning, Fullchain not found: ${fullchain}\n"; fi
+if [ ! -f "${prvkey}" ]; then >&2 echo -e "Warning, Private key not found: ${prvkey}\n"; fi
 
-if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo "Port number must be numeric"; exit 1; fi
+if ! [ "${port}" -eq "${port}" ] 2>/dev/null; then >&2 echo -e "Port number must be numeric.\n"; exit 1; fi
 
 # inbound frame
 inbound=$(jq -nc --arg port "${port}" '{"port":($port|tonumber),"protocol":"trojan","settings":{"decryption":"none"}}')
@@ -85,7 +85,7 @@ do
     IFS=':'; uopt=(${user}); uopt=(${uopt[@]})
     uid="${uopt[0]}"; level="${uopt[1]}"; email="${uopt[2]}"
     unset IFS
-    if [ -z "${uid}" ]; then >&2 echo "Incorrect user format: $user"; usage; exit 1; fi
+    if [ -z "${uid}" ]; then >&2 echo -e "Incorrect user format: $user\n"; usage; exit 1; fi
     if [ -z "${level}" ]; then level=0; fi
     if [ -z "${email}" ]; then email="${uid}@twt.$domain"; fi
     inbound=$(echo $inbound| jq -c --arg uid "${uid}" --arg flow "${flow}" --arg level "${level}" --arg email "${email}" \
@@ -112,7 +112,7 @@ do
     fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
     unset IFS
     if [ -z "${fport}" ]; then
-        >&2 echo "Incorrect fallback format: ${fallback}"
+        >&2 echo -e "Incorrect fallback format: ${fallback}\n"
         usage; exit 1
     fi
     if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi

@@ -42,7 +42,7 @@ usage() {
 
 Jrules='{"rules":[]}'
 
-TEMP=$(getopt -o u:k:r:c:j:di --long lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug -n "$0" -- $@)
+TEMP=$(getopt -o "u:k:r:c:j:di" --long "lgp:,lgr:,lgt:,lsp:,lst:,ltr:,ltrx:,ltt:,lttx:,lwp:,lwt:,mtt:,mwp:,mwt:,ttt:,twp:,twt:,user:,hook:,request-domain:,cert-home:,ip-block:,domain-block:,cn-block,ng-server:,ng-proxy:,st-server:,st-map:,json:,stdin,debug" -n "$0" -- $@)
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
 eval set -- "$TEMP"
@@ -245,4 +245,3 @@ jq -n "$Jroot"
 jq -n "$Jroot">$XCONF
 exec /usr/local/bin/xray -c $XCONF
 
-fi
