@@ -1,7 +1,6 @@
 #!/bin/bash
 
 DIR=$(dirname $0)
-DIR="$(cd $DIR; pwd)"
 CERTHOME="/opt/cert"
 XCONF=/tmp/server-xray.json
 
@@ -36,7 +35,7 @@ usage() {
     echo "    -r|--request-domain <domain-name>     Domain name to request for letsencrypt cert"
     echo "    -c|--cert-home <cert-home-dir>        Reading TLS certs from folder <cert-home-dir>/<domain-name>/"
     echo "    -i|--stdin                            Read config from STDIN instead of auto generation"
-    echo "    -j|--json                             Json snippet to merge into the config. Say '{"log":{"loglevel":"info"}}'"
+    echo "    -j|--json                             Json snippet to merge into the config. Say '{\"log\":{\"loglevel\":\"info\"}}'"
     echo "    -d|--debug                            Start in debug mode with verbose output"
 }
 
@@ -232,7 +231,7 @@ done
 if [ -n "${DEBUG}" ]; then loglevel="debug"; else loglevel="warning"; fi
 Jroot=$(echo $Jroot| jq --arg loglevel "${loglevel}" '.log.loglevel |= $loglevel')
 
-if [ -n "${INJECT}" ]; then
+if [ -n "${INJECT[@]}" ]; then
     for JSON_IN in "${INJECT[@]}"
     do
         Jmerge=$(jq -nc "${JSON_IN}")

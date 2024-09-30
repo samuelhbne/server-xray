@@ -116,7 +116,7 @@ server-xray <server-options>
     -r|--request-domain <domain-name>     Domain name to request for letsencrypt cert
     -c|--cert-home <cert-home-dir>        Reading TLS certs from folder <cert-home-dir>/<domain-name>/
     -i|--stdin                            Read config from STDIN instead of auto generation
-    -j|--json                             Json snippet to merge into the config. Say '{log:{loglevel:info}}'
+    -j|--json                             Json snippet to merge into the config. Say '{"log":{"loglevel":"info"}}'
     -d|--debug                            Start in debug mode with verbose output
 ```
 

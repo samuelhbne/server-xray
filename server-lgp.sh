@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
-
 usage() {
     >&2 echo -e "VLESS-GRPC-PLAIN server builder"
     >&2 echo -e "Usage: server-lgp <s=svcname>,<d=domain.com>,<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path]"
@@ -50,7 +48,7 @@ if [ -z "${serviceName}" ]; then
     usage; exit 1
 fi
 
-if [ -z "${xuser}" ]; then
+if [ -z "${xuser[@]}" ]; then
     >&2 echo -e "Error: User undefined.\n"
     usage; exit 1
 fi
@@ -90,7 +88,7 @@ do
     IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
     fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
     unset IFS
-    if [ -z "${fport}" ]; then >&2 echo -e "Incorrect fallback format: ${fallback}\n"; usage; exit 1; fi
+    if [ -z "${fport}" ]; then >&2 echo -e "Incorrect fallback format: $fb\n"; usage; exit 1; fi
     if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
     fdest="$fhost:$fport"
     Jfb=$(jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}')

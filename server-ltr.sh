@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
-
 usage() {
     >&2 echo -e "VLESS-TCP-REALITY server builder"
     >&2 echo -e "Usage: server-ltr <d=dest.com>,<prv=yy>,[pub=xx],[shortId=zz],<p=listen-port>,<u=id0>,<u=id1>...,[proxy_acpt],[fallback=host:port:path],[xtls]"
@@ -68,7 +66,7 @@ if [ -z "${prvkey}" ]; then
     >&2 echo -e "PublicKey: $pubkey\n"
 fi
 
-if [ -z "${xuser}" ]; then
+if [ -z "${xuser[@]}" ]; then
     >&2 echo -e "Error: User undefined.\n"
     usage; exit 1
 fi
@@ -107,7 +105,7 @@ inbound=$(echo $inbound| jq -c --arg dest "${dest}" --arg pubkey "${pubkey}" --a
 '.streamSettings.realitySettings += {"show":true,"dest":"\($dest):443","serverNames":[$dest],"privateKey":$prvkey,"publicKey":$pubkey}')
 
 # serverNames settings
-if [ -n "${serverNames}" ]; then
+if [ -n "${serverNames[@]}" ]; then
     JserverNames=$(printf '%s\n' "${serverNames[@]}"|jq -R|jq -sc)
     inbound=$(echo $inbound| jq -c --argjson JserverNames "${JserverNames}" '.streamSettings.realitySettings.serverNames += $JserverNames')
 fi
@@ -122,7 +120,7 @@ do
     IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
     fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
     unset IFS
-    if [ -z "${fport}" ]; then >&2 echo -e "Incorrect fallback format: ${fallback}\n"; usage; exit 1; fi
+    if [ -z "${fport}" ]; then >&2 echo -e "Incorrect fallback format: $fb\n"; usage; exit 1; fi
     if [ -z "${fhost}" ]; then fhost="127.0.0.1"; fi
     fdest="$fhost:$fport"
     Jfb=$(jq -nc --arg fdest "${fdest}" --arg fpath "${fpath}" '. |= {"dest":$fdest,"path":$fpath,"xver":1}')

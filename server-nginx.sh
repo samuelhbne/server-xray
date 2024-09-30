@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
-DIR="$(cd $DIR; pwd)"
 SITE_TPL="nginx-site.tpl"
 STREAM_TPL="nginx-stream.tpl"
 NGCONF="/etc/nginx/nginx.conf"
@@ -106,7 +104,7 @@ options=($(echo $STSVR |tr ',' ' '))
             esac
         done
         # Naming the upstream as yahoo_com_jp for SNI yahoo.com.jp
-        upsname=$(echo $sni|sed 's/\./_/g')
+        upsname=$(echo "${sni//\./_}")
         echo "        $sni $upsname;"       >>/tmp/stmap.conf
         echo "    upstream $upsname {"      >>/tmp/stups.conf
         echo "        server $upstream;"    >>/tmp/stups.conf
