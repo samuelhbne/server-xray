@@ -34,30 +34,30 @@ COPY nginx-ws.tpl       /etc/nginx/conf.d/
 
 COPY proxy-log-fmt.tpl  /etc/nginx/conf.d/000-proxy-log-fmt.conf
 
-ADD server-lgp.sh   /server-lgp.sh
-ADD server-lgr.sh   /server-lgr.sh
-ADD server-lgt.sh   /server-lgt.sh
+COPY server-lgp.sh   /server-lgp.sh
+COPY server-lgr.sh   /server-lgr.sh
+COPY server-lgt.sh   /server-lgt.sh
 
-ADD server-lsp.sh   /server-lsp.sh
-ADD server-lst.sh   /server-lst.sh
+COPY server-lsp.sh   /server-lsp.sh
+COPY server-lst.sh   /server-lst.sh
 
-ADD server-ltr.sh   /server-ltr.sh
-ADD server-ltt.sh   /server-ltt.sh
+COPY server-ltr.sh   /server-ltr.sh
+COPY server-ltt.sh   /server-ltt.sh
 
-ADD server-lwp.sh   /server-lwp.sh
-ADD server-lwt.sh   /server-lwt.sh
+COPY server-lwp.sh   /server-lwp.sh
+COPY server-lwt.sh   /server-lwt.sh
 
-ADD server-mtt.sh   /server-mtt.sh
-ADD server-mwp.sh   /server-mwp.sh
-ADD server-mwt.sh   /server-mwt.sh
+COPY server-mtt.sh   /server-mtt.sh
+COPY server-mwp.sh   /server-mwp.sh
+COPY server-mwt.sh   /server-mwt.sh
 
-ADD server-twp.sh   /server-twp.sh
-ADD server-ttt.sh   /server-ttt.sh
-ADD server-twt.sh   /server-twt.sh
+COPY server-twp.sh   /server-twp.sh
+COPY server-ttt.sh   /server-ttt.sh
+COPY server-twt.sh   /server-twt.sh
 
-ADD server-nginx.sh /server-nginx.sh
+COPY server-nginx.sh /server-nginx.sh
 
-ADD run.sh          /run.sh
+COPY run.sh          /run.sh
 
 RUN chmod 755 /*.sh
 
