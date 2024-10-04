@@ -19,7 +19,7 @@ on:
     branches: [ "master", "dev" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
   schedule:
     - cron: '34 12 * * 0'
 
@@ -37,17 +37,17 @@ jobs:
     steps:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
       - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@d840f886c4bd4edc059706d09c6a1586111c540b
+        uses: codacy/codacy-analysis-cli-action@master
         with:
           # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
           # You can also omit the token and run the tools that support default configurations
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
-          output: results.sarif
+          output: codacy_results.sarif
           format: sarif
           # Adjust severity of non-security issues
           gh-code-scanning-compat: true
@@ -59,4 +59,4 @@ jobs:
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: results.sarif
+          sarif_file: codacy_results.sarif
