@@ -114,18 +114,18 @@ if [ -n "${STSVR}" ]; then
     done
 
     # Adding map.conf down to #XMAP_TAG tag
-    sed -i '/#XMAP_TAG/r /tmp/stmap.conf' $NGCONF
+    sed -i '/#XMAP_TAG/r /tmp/stmap.conf' "$NGCONF"
     # Adding ups.conf down to #XUPSTREAM_TAG tag
-    sed -i '/#XUPSTREAM_TAG/r /tmp/stups.conf' $NGCONF
-    sed -i "s/STPORT/${STPORT}/g" $NGCONF
+    sed -i '/#XUPSTREAM_TAG/r /tmp/stups.conf' "$NGCONF"
+    sed -i "s/STPORT/${STPORT}/g" "$NGCONF"
     # Adding "proxy_protocol=on" down to #STPROXY_PASS_TAG tag
     if [ -n "${STPROXY_PASS}" ]; then
         echo "        proxy_protocol on;" >/tmp/stproxy.conf
-        sed -i '/#STPROXY_PASS_TAG/r /tmp/stproxy.conf' $NGCONF
+        sed -i '/#STPROXY_PASS_TAG/r /tmp/stproxy.conf' "$NGCONF"
     fi
     rm -rf /tmp/stmap.conf; rm -rf /tmp/stups.conf; rm -rf /tmp/stproxy.conf
     echo "Generated $NGCONF ====>"
-    cat $NGCONF
+    cat "$NGCONF"
 fi
 
 # Generating Nginx site server configurations.
@@ -194,7 +194,7 @@ do
             sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${site_domain}.conf"
         fi
         echo "Generated /etc/nginx/conf.d/${site_domain}.conf ====>"
-        cat /etc/nginx/conf.d/${site_domain}.conf
+        cat "/etc/nginx/conf.d/${site_domain}.conf"
     done
 done
 
@@ -239,19 +239,19 @@ do
         # Add tpl file content down to #LOCATION tag
         case "${xnetwork}" in
             ws|websocket)
-                sed -i '/#XLOCATION_TAG/r nginx-ws.tpl' ${xdomain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-ws.tpl' "${xdomain}.conf"
                 ;;
             grpc)
-                sed -i '/#XLOCATION_TAG/r nginx-grpc.tpl' ${xdomain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-grpc.tpl' "${xdomain}.conf"
                 ;;
             splt|proxy)
-                sed -i '/#XLOCATION_TAG/r nginx-proxy.tpl' ${xdomain}.conf
+                sed -i '/#XLOCATION_TAG/r nginx-proxy.tpl' "${xdomain}.conf"
                 ;;
         esac
         ESC_LOCATION=$(printf '%s\n' "${xlocation}" | sed -e 's/[]\/$*.^[]/\\&/g')
-        sed -i "s/HOST/${xhost}/g" ${xdomain}.conf
-        sed -i "s/PORT/${xport}/g" ${xdomain}.conf
-        sed -i "s/WEBPATH/${ESC_LOCATION}/g" ${xdomain}.conf
+        sed -i "s/HOST/${xhost}/g" "${xdomain}.conf"
+        sed -i "s/PORT/${xport}/g" "${xdomain}.conf"
+        sed -i "s/WEBPATH/${ESC_LOCATION}/g" "${xdomain}.conf"
         # Applying proxy log format instead of main format when --ng-server proxy_pass was set
         if [ -n "${NGPROTOCOL}" ]; then
             sed -i '/access_log/s/main/proxy/' "${xdomain}.conf"
@@ -259,7 +259,7 @@ do
             sed -i 's/proxy_add_x_forwarded_for/proxy_protocol_addr/g' "${xdomain}.conf"
         fi
         echo "Generated /etc/nginx/conf.d/${xdomain}.conf ====>"
-        cat /etc/nginx/conf.d/${xdomain}.conf
+        cat "/etc/nginx/conf.d/${xdomain}.conf"
     done
 done
 exit 0

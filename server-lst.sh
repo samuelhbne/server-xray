@@ -107,7 +107,7 @@ inbound=$(echo $inbound| jq -c --arg fullchain "${fullchain}" --arg prvkey "${pr
 # Fallback settings
 for fb in "${fallback[@]}"
 do
-    IFS=':'; fopt=(${fb}); fopt=(${fopt[@]})
+    IFS=':'; fopt=("${fb}"); fopt=("${fopt[@]}")
     fhost="${fopt[0]}"; fport="${fopt[1]}"; fpath="${fopt[2]}"
     unset IFS
     if [ -z "${fport}" ]; then >&2 echo -e "Incorrect fallback format: $fb\n"; usage; exit 1; fi

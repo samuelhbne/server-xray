@@ -1,6 +1,7 @@
 name: Trivy-scanning
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -12,21 +13,20 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
       -
-        name: Run Trivy fs vulnerability scanner
-        uses: anandg112/trivy-action@feat/add-skip-dirs-option
+        name: Run Trivy fs vulnerability scanner in fs mode
+        uses: aquasecurity/trivy-action@0.20.0
         with:
           scan-type: 'fs'
           ignore-unfixed: true
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
+          format: 'sarif'
           output: 'trivy-results.sarif'
           #severity: 'CRITICAL'
       -
         name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
