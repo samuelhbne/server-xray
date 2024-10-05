@@ -180,13 +180,12 @@ do
 
         ESC_CERTFILE=$(printf '%s\n' "${fullchain}" | sed -e 's/[]\/$*.^[]/\\&/g')
         ESC_PRVKEYFILE=$(printf '%s\n' "${prvkey}" | sed -e 's/[]\/$*.^[]/\\&/g')
-        cat "${SITE_TPL}" \
-            | sed "s/CERTFILE/${ESC_CERTFILE}/g" \
-            | sed "s/PRVKEYFILE/${ESC_PRVKEYFILE}/g" \
-            | sed "s/NGDOMAIN/${site_domain}/g" \
-            | sed "s/NGPORT/${port}/g" \
-            | sed "s/NGPROTOCOL/${NGPROTOCOL}/g" \
-            >"${site_domain}.conf"
+        cp -a "${SITE_TPL}"                         "${site_domain}.conf"
+        sed -i "s/CERTFILE/${ESC_CERTFILE}/g"       "${site_domain}.conf"
+        sed -i "s/PRVKEYFILE/${ESC_PRVKEYFILE}/g"   "${site_domain}.conf"
+        sed -i "s/NGDOMAIN/${site_domain}/g"        "${site_domain}.conf"
+        sed -i "s/NGPORT/${port}/g"                 "${site_domain}.conf"
+        sed -i "s/NGPROTOCOL/${NGPROTOCOL}/g"       "${site_domain}.conf"
         # Applying proxy log format instead of main format when --ng-server proxy_pass was set
         if [ -n "${NGPROTOCOL}" ]; then
             sed -i '/access_log/s/main/proxy/' "${site_domain}.conf"
