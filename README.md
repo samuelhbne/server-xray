@@ -368,31 +368,7 @@ $ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
 
 #### 2. HTTP3 failed to work after going through Nginx Stream SNI mapping
 
-```shell
-$ docker run --name server-xray-quic -v /home/ubuntu/cert:/opt/cert -p 443:443 -p 443:443/udp -d samuelhbne/server-xray:dev \
--c /opt/cert --cn-block --debug -u u=id0,u=id1 \
---lsp d=mydomain.org,p=44300,w=/wbpath0 \
---ng-proxy d=mydomain.org,p=44302,l=/wbpath0,n=splt \
---ng-server proxy_acpt,p=8443,d=mydomain.org \
---st-map sni=default,ups=127.0.0.1:8443 \
---st-server proxy_pass,p=443
-```
-
-Client side setup:
-
-```shell
-# Start xray-proxy container as VLESS-splitHTTP-TLS client
-$ docker run --name proxy-xray-quic --rm -it -p1080:1080 samuelhbne/proxy-xray:dev --lst3 id0@mydomain.org:443:/wbpath0 --debug
-
-# Executing connection test in another console
-$ curl -sSx socks5h://127.0.0.1:1080 https://checkip.amazonaws.com
-curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to checkip.amazonaws.com:443
-```
-You will get the following log output during vless connection initialisation. Trust it was an issue related to quic-go implementation.
-
-```shell
-failed to sufficiently increase receive buffer size (was: 208 kiB, wanted: 7168 kiB, got: 416 kiB). See https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes for details.
-```
+Nginx does not support HTTP3 Stream mapping yet. So please wait for further update if this is what you are after.
 
 ## Build server-xray docker image from source
 
