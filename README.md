@@ -395,3 +395,5 @@ docker buildx build --platform=linux/amd64  --output type=docker -t samuelhbne/s
 ## Credits
 
 Thanks to [RPRX](https://github.com/RPRX) for the [Xray-Core](https://github.com/XTLS/Xray-core) project.
+
+Thanks to [Loyalsoldier](https://github.com/Loyalsoldier) for the [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) project.
