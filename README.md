@@ -52,7 +52,7 @@ Try to connect the server from Xray compatible mobile app like [v2rayNG](https:/
 ### Verifying VLESS-TCP-TLS-XTLS connection on the domain name with [proxy-xray](https://github.com/samuelhbne/proxy-xray)
 
 ```shell
-# Start VLESS-TCP-TLS-XTLS client via running xray-proxy with "--lst3"
+# Start VLESS-TCP-TLS-XTLS client via running xray-proxy with "--lttx"
 $ docker run --name proxy-xray -p 1080:1080 --rm -it samuelhbne/proxy-xray \
 --lttx myid@mydomain.duckdns.org:443
 ...
@@ -394,6 +394,6 @@ docker buildx build --platform=linux/amd64  --output type=docker -t samuelhbne/s
 
 ## Credits
 
-Thanks to [RPRX](https://github.com/RPRX) for the [Xray-Core](https://github.com/XTLS/Xray-core) project.
+Thanks to [RPRX](https://github.com/RPRX) for [Xray-Core](https://github.com/XTLS/Xray-core).
 
-Thanks to [Loyalsoldier](https://github.com/Loyalsoldier) for the [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat) project.
+Thanks to [Loyalsoldier](https://github.com/Loyalsoldier) for [v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat).
