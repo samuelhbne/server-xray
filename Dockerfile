@@ -11,7 +11,7 @@ RUN git clone https://github.com/XTLS/Xray-core.git . && \
 
 RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
 RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
-    
+
 
 FROM nginx:stable-alpine3.20
 
