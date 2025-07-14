@@ -1,6 +1,6 @@
 FROM golang:1.24-alpine3.20 AS builder
 
-ARG XRAYVER='v25.4.30'
+ARG XRAYVER='v25.6.8'
 
 RUN apk add --no-cache bash git build-base curl
 
@@ -11,7 +11,7 @@ RUN git clone https://github.com/XTLS/Xray-core.git . && \
 
 RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
 RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
-    
+
 
 FROM nginx:stable-alpine3.20
 
