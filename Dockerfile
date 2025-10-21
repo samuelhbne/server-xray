@@ -1,6 +1,6 @@
-FROM golang:1.24-alpine3.20 AS builder
+FROM golang:1.25-alpine3.22 AS builder
 
-ARG XRAYVER='v25.6.8'
+ARG XRAYVER='v25.10.15'
 
 RUN apk add --no-cache bash git build-base curl
 
@@ -13,7 +13,7 @@ RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/d
 RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
 
 
-FROM nginx:stable-alpine3.20
+FROM nginx:alpine3.22
 
 ARG ACMEVER='2.9.0'
 
