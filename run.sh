@@ -90,21 +90,21 @@ while true ; do
             ;;
         --domain-block)
             Jrules=$(echo "${Jrules}" | jq --arg blkdomain "$2" \
-            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$blkdomain]}]')
+            '.rules += [{"type":"field","outboundTag":"block","domain":[$blkdomain]}]')
             shift 2
             ;;
         --ip-block)
             Jrules=$(echo "${Jrules}" | jq --arg blkip "$2" \
-            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$blkip]}]')
+            '.rules += [{"type":"field","outboundTag":"block","ip":[$blkip]}]')
             shift 2
             ;;
         --cn-block)
             Jrules=$(echo "${Jrules}" | jq --arg igndomain "geosite:geolocation-cn" \
-            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]')
+            '.rules += [{"type":"field","outboundTag":"block","domain":[$igndomain]}]')
             Jrules=$(echo "${Jrules}" | jq --arg igndomain "geosite:cn" \
-            '.rules += [{"type":"field","outboundTag":"blocked","domain":[$igndomain]}]')
+            '.rules += [{"type":"field","outboundTag":"block","domain":[$igndomain]}]')
             Jrules=$(echo "${Jrules}" | jq --arg ignip "geoip:cn" \
-            '.rules += [{"type":"field","outboundTag":"blocked","ip":[$ignip]}]')
+            '.rules += [{"type":"field","outboundTag":"block","ip":[$ignip]}]')
             shift 1
             ;;
         --ng-server)
@@ -209,7 +209,7 @@ if [ -n "${NGOPT}" ]; then
 fi
 
 # Add root config
-Jroot='{"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"blocked","protocol":"blackhole"}]}'
+Jroot='{"outbounds":[{"tag":"direct","protocol":"freedom"},{"tag":"block","protocol":"blackhole"}]}'
 
 # Add routing config
 Jrouting='{"routing":{"domainStrategy":"AsIs"}}'
