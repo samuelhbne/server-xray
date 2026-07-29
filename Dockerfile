@@ -1,12 +1,12 @@
 FROM golang:1.26-alpine3.23 AS builder
 
-ARG XRAYVER='v26.3.27'
+ARG XRAY_VER='v26.3.27'
 
 RUN apk add --no-cache bash git build-base curl
 
 WORKDIR /go/src/XTLS/Xray-core
 RUN git clone https://github.com/XTLS/Xray-core.git . && \
-    git checkout ${XRAYVER} && \
+    git checkout ${XRAY_VER} && \
     go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
 RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
@@ -15,7 +15,7 @@ RUN curl -sSLO https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/d
 
 FROM nginx:alpine3.23
 
-ARG ACMEVER='2.9.0'
+ARG ACME_VER='2.9.0'
 
 COPY --from=builder /go/src/XTLS/Xray-core/xray         /usr/local/bin/
 COPY --from=builder /go/src/XTLS/Xray-core/geoip.dat    /usr/local/bin/
@@ -23,8 +23,8 @@ COPY --from=builder /go/src/XTLS/Xray-core/geosite.dat  /usr/local/bin/
 
 WORKDIR /root
 RUN apk add --no-cache bash openssl curl socat jq moreutils libcap-setcap
-RUN curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACMEVER}.tar.gz"|tar zxvf -
-RUN ln -s acme.sh-${ACMEVER} acme.sh; mkdir .acme.sh
+RUN curl -sSL "https://github.com/acmesh-official/acme.sh/archive/refs/tags/${ACME_VER}.tar.gz"|tar zxvf -
+RUN ln -s acme.sh-${ACME_VER} acme.sh; mkdir .acme.sh
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/sbin/nginx
 
 COPY nginx-site.tpl     /etc/nginx/conf.d/
