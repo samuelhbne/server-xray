@@ -236,11 +236,14 @@ if [ "${#INJECT[@]}" -gt 0 ]; then
     do
         Jmerge=$(jq -nc "${JSON_IN}")
         if [[ $? -ne 0 ]]; then echo "Invalid json ${JSON_IN}"; exit 1; fi
-        Jroot=$(jq -n --argjson Jroot "${Jroot}" --argjson Jmerge "${Jmerge}" '$Jroot + $Jmerge')
+        # Jroot=$(jq -n --argjson Jroot "${Jroot}" --argjson Jmerge "${Jmerge}" '$Jroot + $Jmerge')
+        Jroot=$(printf '%s\n' "$Jroot" "$Jmerge" | jq -s '.[0] + .[1]')
     done
 fi
 
-jq -n "$Jroot"
-jq -n "$Jroot">$XCONF
+# jq -n "$Jroot"
+# jq -n "$Jroot">$XCONF
+printf '%s\n' "$Jroot" | jq . > "$XCONF" || exit 1
+cat "$XCONF"
 exec /usr/local/bin/xray -c $XCONF
 
